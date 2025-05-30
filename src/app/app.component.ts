@@ -15,6 +15,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
   private app!: Application;
   private stage!: Container;
   private boundHandleResize!: () => void; // For window resize event listener
+  private initialCanvasWidth!: number; // Store initial canvas width
+  private initialCanvasHeight!: number; // Store initial canvas height
   private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
@@ -77,13 +79,20 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
         // Update the stage's hitArea if stage is initialized
         // The stage's screen rectangle should update automatically with the renderer
-        if (this.stage) {
+        if (this.initialCanvasWidth > 0 && this.initialCanvasHeight > 0) { // Avoid division by zero
+            const scaleX = newWidth / this.initialCanvasWidth;
+            const scaleY = newHeight / this.initialCanvasHeight;
+
+            if (this.stage) {
+                this.stage.scale.set(scaleX, scaleY);
+                this.stage.hitArea = this.app.screen; // Ensure hitArea matches the new screen dimensions
+                console.log(`PixiJS stage scaled by ${scaleX.toFixed(2)}x (width), ${scaleY.toFixed(2)}x (height)`);
+            }
+        } else if (this.stage) { // Fallback if initial dimensions weren't captured, just update hitArea
             this.stage.hitArea = this.app.screen;
         }
 
-        // Optional: Logic to reposition UI elements can be added here if needed.
-        // For now, we assume fixed positions for buttons.
-
+        // Original log for renderer resize
         console.log(`PixiJS canvas resized to ${newWidth}x${newHeight}`);
     } else {
         console.warn('handleResize called but PixiJS app or renderer not ready.');
@@ -136,6 +145,9 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       console.error('Pixi Application object is null or undefined after init!');
       return;
     }
+    this.initialCanvasWidth = this.app.screen.width;
+    this.initialCanvasHeight = this.app.screen.height;
+    console.log(`Initial canvas dimensions stored: ${this.initialCanvasWidth}x${this.initialCanvasHeight}`);
 
     console.log('Attempting to access pixi-container. Element found:', document.getElementById('pixi-container'));
     if (!this.app.canvas) {
