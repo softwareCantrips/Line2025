@@ -1,6 +1,6 @@
 import { RouterOutlet } from '@angular/router';
 import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
-import { Application, Container, Graphics, Text, FederatedPointerEvent } from 'pixi.js';
+import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } from 'pixi.js'; // Added Point
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
 
@@ -17,6 +17,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
   private boundHandleResize!: () => void; // For window resize event listener
   private initialCanvasWidth!: number; // Store initial canvas width
   private initialCanvasHeight!: number; // Store initial canvas height
+  private boundOnDragMoveDOM!: (event: PointerEvent) => void; // For DOM pointermove
+  private boundOnDragEndDOM!: (event: PointerEvent) => void;   // For DOM pointerup/pointerleave
   private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
@@ -41,14 +43,24 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
     this.dragOffset.y = localRectangleHeight / 2;
 
     // Immediately update the object's position to snap its (local) center to the cursor
-    this.onDragMove(event);
+    // Use the new DOM-based move handler, passing the native PointerEvent
+    this.onDragMoveDOM(event.nativeEvent as PointerEvent);
 
-    // Make the stage interactive to listen for move and up events globally.
-    // This ensures dragging continues smoothly even if the pointer moves outside the dragged object.
-    this.app.stage.eventMode = 'static';
-    this.app.stage.on('pointermove', this.onDragMove, this);
-    this.app.stage.on('pointerup', this.onDragEnd, this);
-    this.app.stage.on('pointerupoutside', this.onDragEnd, this);
+    // Remove PixiJS stage listeners for drag move/end
+    // this.app.stage.eventMode = 'static'; // This was for PixiJS stage listeners, stage eventMode is set globally in ngAfterViewInit
+    // this.app.stage.off('pointermove', this.onDragMove, this); // Switched to DOM listener
+    // this.app.stage.off('pointerup', this.onDragEnd, this); // Switched to DOM listener
+    // this.app.stage.off('pointerupoutside', this.onDragEnd, this); // Switched to DOM listener
+
+    // Add new DOM listeners to the canvas for the drag operation
+    if (this.app && this.app.canvas) {
+        this.app.canvas.addEventListener('pointermove', this.boundOnDragMoveDOM, { passive: false });
+        this.app.canvas.addEventListener('pointerup', this.boundOnDragEndDOM, { passive: false });
+        this.app.canvas.addEventListener('pointerleave', this.boundOnDragEndDOM, { passive: false }); // Catches mouse leaving canvas
+        console.log('DOM drag listeners added to canvas.');
+    } else {
+        console.error('Cannot add DOM drag listeners: PixiJS app or canvas not available.');
+    }
   }
 
   /**
@@ -86,6 +98,46 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       this.draggedObject.x = localPosition.x - this.dragOffset.x;
       this.draggedObject.y = localPosition.y - this.dragOffset.y;
     }
+  }
+
+  private onDragMoveDOM(event: PointerEvent): void {
+    event.preventDefault(); // Recommended for drag operations
+
+    if (this.draggedObject) {
+        const globalX = event.clientX;
+        const globalY = event.clientY;
+        const newPixiPosition = new Point(globalX, globalY); // Use imported Point
+
+        // --- Start of copied/adapted diagnostic logging ---
+        console.log('--- onDragMoveDOM ---'); // Indicate DOM handler
+        console.log(`Window Inner W/H: ${window.innerWidth} / ${window.innerHeight}`);
+        console.log(`App Renderer W/H: ${this.app.renderer.width} / ${this.app.renderer.height}`);
+        console.log(`Stage Scale X/Y: ${this.stage.scale.x.toFixed(2)} / ${this.stage.scale.y.toFixed(2)}`);
+        console.log(`Event ClientX/Y: ${event.clientX.toFixed(2)} / ${event.clientY.toFixed(2)}`); // Changed from event.global
+
+        const parent = this.draggedObject.parent || this.app.stage;
+        const localPosition = parent.toLocal(newPixiPosition); // Use newPixiPosition
+        console.log(`Local Pointer X/Y (in stage coords): ${localPosition.x.toFixed(2)} / ${localPosition.y.toFixed(2)}`);
+
+        console.log(`Drag Offset X/Y (local to rect): ${this.dragOffset.x} / ${this.dragOffset.y}`);
+
+        const newObjX = localPosition.x - this.dragOffset.x;
+        const newObjY = localPosition.y - this.dragOffset.y;
+        console.log(`Calculated New Obj X/Y (local in stage): ${newObjX.toFixed(2)} / ${newObjY.toFixed(2)}`);
+        // --- End of copied/adapted diagnostic logging ---
+
+        this.draggedObject.x = newObjX;
+        this.draggedObject.y = newObjY;
+    }
+  }
+
+  private onDragEndDOM(event: PointerEvent): void {
+    event.preventDefault(); // Recommended
+
+    // Call the existing onDragEnd logic.
+    // onDragEnd will be responsible for resetting the object's state
+    // and, importantly, removing these DOM listeners.
+    this.onDragEnd();
   }
 
   private handleResize(): void {
@@ -129,10 +181,15 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       this.draggedObject.cursor = 'grab';
       this.draggedObject = null; // Release the reference to the dragged object.
 
-      // Remove global event listeners from the stage.
-      this.app.stage.off('pointermove', this.onDragMove, this);
-      this.app.stage.off('pointerup', this.onDragEnd, this);
-      this.app.stage.off('pointerupoutside', this.onDragEnd, this);
+      // Remove DOM event listeners from the canvas.
+      if (this.app && this.app.canvas) {
+          this.app.canvas.removeEventListener('pointermove', this.boundOnDragMoveDOM);
+          this.app.canvas.removeEventListener('pointerup', this.boundOnDragEndDOM);
+          this.app.canvas.removeEventListener('pointerleave', this.boundOnDragEndDOM);
+          console.log('DOM drag listeners removed from canvas.');
+      } else {
+          console.warn('Cannot remove DOM drag listeners: PixiJS app or canvas not available.');
+      }
     }
   }
 
@@ -297,6 +354,11 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       this.boundHandleResize = this.handleResize.bind(this);
       window.addEventListener('resize', this.boundHandleResize);
       console.log('Window resize listener added.');
+
+      // Bind DOM drag handlers
+      this.boundOnDragMoveDOM = this.onDragMoveDOM.bind(this);
+      this.boundOnDragEndDOM = this.onDragEndDOM.bind(this);
+      console.log('DOM drag handlers bound.');
 
     } else {
       if (!containerElement) {
