@@ -16,6 +16,7 @@ export class AppComponent implements AfterViewInit {
   private stage!: Container;
   private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
+  private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
 
   /**
    * Handles the start of a drag operation on a Container (specifically, a Graphics object).
@@ -81,6 +82,18 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
+  private addButtonHoverEffect(buttonGraphic: Graphics, hoverTint: number = 0xDDDDDD): void {
+    const initialTint = buttonGraphic.tint; // Store the tint it had before hover setup
+
+    buttonGraphic.on('pointerover', () => {
+        buttonGraphic.tint = hoverTint;
+    });
+
+    buttonGraphic.on('pointerout', () => {
+        buttonGraphic.tint = initialTint; // Reset to its tint before hover
+    });
+  }
+
   async ngAfterViewInit(): Promise<void> {
     // Create a PIXI application
     this.app = new Application(); // Options can be passed here or to init
@@ -128,6 +141,7 @@ export class AppComponent implements AfterViewInit {
       buttonBackground.beginFill(0x00FF00); // Green color
       buttonBackground.drawRoundedRect(0, 0, 200, 50, 10); // x, y, width, height, radius
       buttonBackground.endFill();
+      this.addButtonHoverEffect(buttonBackground, 0xAAFFAA); // Apply hover effect (lighter green)
       buttonBackground.eventMode = 'static'; // Make background interactive
       buttonBackground.cursor = 'pointer';   // Set cursor for background
 
@@ -169,7 +183,53 @@ export class AppComponent implements AfterViewInit {
 
         // Add the new rectangle to the main stage
         this.stage.addChild(rectangle);
-        console.log('Rectangle spawned');
+        this.spawnedRectangles.push(rectangle); // Track the spawned rectangle
+        console.log('Rectangle spawned and added to tracking array');
+      });
+
+      // Create "Delete All Rectangles" button
+      const deleteButtonContainer = new Container();
+
+      const deleteButtonBackground = new Graphics();
+      deleteButtonBackground.beginFill(0xFF0000); // Red color
+      deleteButtonBackground.drawRoundedRect(0, 0, 200, 50, 10); // Same dimensions
+      deleteButtonBackground.endFill();
+      this.addButtonHoverEffect(deleteButtonBackground, 0xFF5555); // Lighter red hover
+      deleteButtonBackground.eventMode = 'static';
+      deleteButtonBackground.cursor = 'pointer';
+
+      const deleteButtonText = new Text('Delete All', {
+        fontSize: 24,
+        fill: 0xFFFFFF, // White text
+        align: 'center'
+      });
+      deleteButtonText.anchor.set(0.5);
+      deleteButtonText.x = deleteButtonBackground.width / 2;
+      deleteButtonText.y = deleteButtonBackground.height / 2;
+
+      deleteButtonContainer.addChild(deleteButtonBackground, deleteButtonText);
+
+      // Position it to the right of the spawn button
+      deleteButtonContainer.x = buttonContainer.x + buttonContainer.width + 20; // 20px spacing
+      deleteButtonContainer.y = buttonContainer.y; // Same y-level
+
+      deleteButtonContainer.eventMode = 'static';
+      deleteButtonContainer.cursor = 'pointer';
+
+      this.stage.addChild(deleteButtonContainer);
+      console.log('Delete All button added to stage');
+
+      // Event listener for the "Delete All" button
+      deleteButtonContainer.on('pointerdown', () => {
+        // Iterate over the array and remove/destroy each rectangle
+        while (this.spawnedRectangles.length > 0) {
+            const rectangle = this.spawnedRectangles.pop(); // Get and remove the last rectangle from array
+            if (rectangle) {
+                this.stage.removeChild(rectangle); // Remove from stage
+                rectangle.destroy({ children: true }); // Destroy the rectangle and its children (if any)
+            }
+        }
+        console.log('All spawned rectangles deleted.');
       });
 
       // Application starts the ticker by default, so no need to manually start it
