@@ -81,17 +81,21 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit(): Promise<void> {
     // Create a PIXI application
-    this.app = new Application({
+    this.app = new Application(); // Options can be passed here or to init
+    
+    // Initialize the application (asynchronous operation)
+    await this.app.init({
       width: window.innerWidth,
       height: window.innerHeight,
       backgroundColor: 0xADD8E6, // Light blue
       antialias: true
     });
-    console.log('Pixi Application instance:', this.app);
+    console.log('Pixi Application instance (after init):', this.app);
     if (!this.app) {
-      console.error('Pixi Application object is null or undefined after instantiation!');
+      // This check might be redundant if init() throws on failure, but good for safety.
+      console.error('Pixi Application object is null or undefined after init!');
       return;
     }
 
