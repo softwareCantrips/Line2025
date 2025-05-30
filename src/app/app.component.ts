@@ -1,7 +1,8 @@
 import { RouterOutlet } from '@angular/router';
 import { Component, AfterViewInit } from '@angular/core';
-import { Application, Container, Graphics, Text, FederatedPointerEvent, DisplayObject } from 'pixi.js';
+import { Application, Container, Graphics, Text, FederatedPointerEvent } from 'pixi.js';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
+// DisplayObject import removed as Graphics objects (which are Containers) are used.
 
 @Component({
   selector: 'app-root',
@@ -13,15 +14,15 @@ import { Application, Container, Graphics, Text, FederatedPointerEvent, DisplayO
 export class AppComponent implements AfterViewInit {
   private app!: Application;
   private stage!: Container;
-  private draggedObject: DisplayObject | null = null; // Holds the object currently being dragged
+  private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
 
   /**
-   * Handles the start of a drag operation on a DisplayObject.
+   * Handles the start of a drag operation on a Container (specifically, a Graphics object).
    * @param event The pointer event that triggered the drag.
-   * @param object The DisplayObject to be dragged.
+   * @param object The Container (Graphics object) to be dragged.
    */
-  private onDragStart(event: FederatedPointerEvent, object: DisplayObject) {
+  private onDragStart(event: FederatedPointerEvent, object: Container) {
     // Visual feedback: make object semi-transparent and change cursor
     object.alpha = 0.7;
     object.cursor = 'grabbing';
