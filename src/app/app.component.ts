@@ -32,13 +32,14 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
     object.cursor = 'grabbing';
     this.draggedObject = object;
 
-    // Calculate the offset between the pointer's global position and the object's global position.
-    // This offset is used to maintain the object's relative position to the pointer during drag.
-    const pointerPosition = event.global.clone();
-    const objectPosition = object.getGlobalPosition();
+    // Calculate dragOffset as half the object's current visual dimensions
+    // This will make the center of the object snap to the cursor.
+    // Note: object.width and object.height account for any scaling (e.g., stage scaling).
+    this.dragOffset.x = object.width / 2;
+    this.dragOffset.y = object.height / 2;
 
-    this.dragOffset.x = pointerPosition.x - objectPosition.x;
-    this.dragOffset.y = pointerPosition.y - objectPosition.y;
+    // Immediately update the object's position to snap its center to the cursor
+    this.onDragMove(event);
 
     // Make the stage interactive to listen for move and up events globally.
     // This ensures dragging continues smoothly even if the pointer moves outside the dragged object.
