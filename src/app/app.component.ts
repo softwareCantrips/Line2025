@@ -32,13 +32,15 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
     object.cursor = 'grabbing';
     this.draggedObject = object;
 
-    // Calculate dragOffset as half the object's current visual dimensions
-    // This will make the center of the object snap to the cursor.
-    // Note: object.width and object.height account for any scaling (e.g., stage scaling).
-    this.dragOffset.x = object.width / 2;
-    this.dragOffset.y = object.height / 2;
+    // Calculate dragOffset based on the rectangle's known local (unscaled) dimensions.
+    // This ensures the offset is correct for positioning within the stage's coordinate system,
+    // especially when the stage itself is scaled.
+    const localRectangleWidth = 50;
+    const localRectangleHeight = 50;
+    this.dragOffset.x = localRectangleWidth / 2;
+    this.dragOffset.y = localRectangleHeight / 2;
 
-    // Immediately update the object's position to snap its center to the cursor
+    // Immediately update the object's position to snap its (local) center to the cursor
     this.onDragMove(event);
 
     // Make the stage interactive to listen for move and up events globally.
