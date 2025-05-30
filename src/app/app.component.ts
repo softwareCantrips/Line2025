@@ -94,7 +94,8 @@ export class AppComponent implements AfterViewInit {
     this.stage = this.app.stage;
 
     // Append the canvas to the DOM
-    document.getElementById('pixi-container')?.appendChild(this.app.view as HTMLCanvasElement);
+    // For PixiJS v8, app.canvas is used instead of app.view
+    document.getElementById('pixi-container')?.appendChild(this.app.canvas as HTMLCanvasElement);
 
     // Create a button
     const buttonContainer = new Container();
