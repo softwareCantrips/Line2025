@@ -177,14 +177,14 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
       const buttonBackground = new Graphics();
       buttonBackground.beginFill(0x00FF00); // Green color
-      buttonBackground.drawRoundedRect(0, 0, 200, 50, 10); // x, y, width, height, radius
+      buttonBackground.drawRoundedRect(0, 0, 100, 25, 5); // x, y, width, height, radius (50% smaller)
       buttonBackground.endFill();
       this.addButtonHoverEffect(buttonBackground, 0xAAFFAA); // Apply hover effect (lighter green)
       buttonBackground.eventMode = 'static'; // Make background interactive
       buttonBackground.cursor = 'pointer';   // Set cursor for background
 
       const buttonText = new Text('Spawn Rectangle', {
-        fontSize: 24,
+        fontSize: 12, // 50% smaller font
         fill: 0x000000, // Black color
         align: 'center'
       });
@@ -205,7 +205,7 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
         // Style the rectangle: random fill color, specific size
         rectangle.beginFill(Math.random() * 0xFFFFFF); // Random color
-        rectangle.drawRect(0, 0, 100, 100); // x, y, width, height
+        rectangle.drawRect(0, 0, 50, 50); // x, y, width, height (now 50x50)
         rectangle.endFill();
 
         // Position the new rectangle (e.g., to the right of the button)
@@ -230,14 +230,14 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
       const deleteButtonBackground = new Graphics();
       deleteButtonBackground.beginFill(0xFF0000); // Red color
-      deleteButtonBackground.drawRoundedRect(0, 0, 200, 50, 10); // Same dimensions
+      deleteButtonBackground.drawRoundedRect(0, 0, 100, 25, 5); // 50% smaller dimensions
       deleteButtonBackground.endFill();
       this.addButtonHoverEffect(deleteButtonBackground, 0xFF5555); // Lighter red hover
       deleteButtonBackground.eventMode = 'static';
       deleteButtonBackground.cursor = 'pointer';
 
       const deleteButtonText = new Text('Delete All', {
-        fontSize: 24,
+        fontSize: 12, // 50% smaller font
         fill: 0xFFFFFF, // White text
         align: 'center'
       });
@@ -247,7 +247,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
       deleteButtonContainer.addChild(deleteButtonBackground, deleteButtonText);
 
-      // Position it to the right of the spawn button
+      // Position it to the right of the (now smaller) spawn button.
+      // buttonContainer.width will correctly reflect the new width of the spawn button's background (100).
       deleteButtonContainer.x = buttonContainer.x + buttonContainer.width + 20; // 20px spacing
       deleteButtonContainer.y = buttonContainer.y; // Same y-level
 
