@@ -1,5 +1,5 @@
 import { RouterOutlet } from '@angular/router';
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { Application, Container, Graphics, Text, FederatedPointerEvent } from 'pixi.js';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
@@ -11,9 +11,10 @@ import { Application, Container, Graphics, Text, FederatedPointerEvent } from 'p
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnDestroy { // Implemented OnDestroy
   private app!: Application;
   private stage!: Container;
+  private boundHandleResize!: () => void; // For window resize event listener
   private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
@@ -62,6 +63,30 @@ export class AppComponent implements AfterViewInit {
       // Update the dragged object's position, adjusting for the initial drag offset.
       this.draggedObject.x = localPosition.x - this.dragOffset.x;
       this.draggedObject.y = localPosition.y - this.dragOffset.y;
+    }
+  }
+
+  private handleResize(): void {
+    // Check if PixiJS app and its renderer are initialized
+    if (this.app && this.app.renderer) {
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+
+        // Resize the PixiJS renderer
+        this.app.renderer.resize(newWidth, newHeight);
+
+        // Update the stage's hitArea if stage is initialized
+        // The stage's screen rectangle should update automatically with the renderer
+        if (this.stage) {
+            this.stage.hitArea = this.app.screen;
+        }
+
+        // Optional: Logic to reposition UI elements can be added here if needed.
+        // For now, we assume fixed positions for buttons.
+
+        console.log(`PixiJS canvas resized to ${newWidth}x${newHeight}`);
+    } else {
+        console.warn('handleResize called but PixiJS app or renderer not ready.');
     }
   }
 
@@ -234,6 +259,12 @@ export class AppComponent implements AfterViewInit {
 
       // Application starts the ticker by default, so no need to manually start it
       // or add a render function to the ticker.
+
+      // Setup and add window resize listener
+      this.boundHandleResize = this.handleResize.bind(this);
+      window.addEventListener('resize', this.boundHandleResize);
+      console.log('Window resize listener added.');
+
     } else {
       if (!containerElement) {
         console.error('pixi-container element not found in the DOM!');
@@ -243,5 +274,18 @@ export class AppComponent implements AfterViewInit {
         console.error('Pixi Application or its canvas is not ready for DOM insertion.');
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.boundHandleResize) {
+        window.removeEventListener('resize', this.boundHandleResize);
+        console.log('Window resize listener removed.');
+    }
+
+    // Optional: Consider destroying the PixiJS application to free up all resources
+    // if (this.app) {
+    //     this.app.destroy(true, { children: true, texture: true, basePath: true });
+    //     console.log('PixiJS Application destroyed.');
+    // }
   }
 }
