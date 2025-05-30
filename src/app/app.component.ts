@@ -11,8 +11,8 @@ import { Application, Container, Graphics, Text, FederatedPointerEvent, DisplayO
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements AfterViewInit {
-  private app: Application;
-  private stage: Container;
+  private app!: Application;
+  private stage!: Container;
   private draggedObject: DisplayObject | null = null; // Holds the object currently being dragged
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
 
