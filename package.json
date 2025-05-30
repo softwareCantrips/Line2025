@@ -1,0 +1,67 @@
+{
+  "name": "line2025",
+  "version": "0.0.0",
+  "main": "electron/main.js",
+  "description": "A board game built with Angular, Pixi.js, and Electron",
+  "author": "Software Cantrips",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "electron": "npm run build && electron electron/main.js",
+    "electron:dev": "ng build --watch & electron electron/main.js",
+    "dist": "npm run build && electron-builder",
+    "serve:ssr:line2025": "node dist/line2025/server/server.mjs"
+  },
+  "build": {
+    "appId": "com.example.line2025",
+    "productName": "Line2025",
+    "files": [
+      "dist/line2025/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^18.2.0",
+    "@angular/common": "^18.2.0",
+    "@angular/compiler": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/forms": "^18.2.0",
+    "@angular/platform-browser": "^18.2.0",
+    "@angular/platform-browser-dynamic": "^18.2.0",
+    "@angular/platform-server": "^18.2.0",
+    "@angular/router": "^18.2.0",
+    "@angular/ssr": "^18.2.11",
+    "@pixi/core": "^7.4.3",
+    "@pixi/display": "^7.4.3",
+    "@pixi/ticker": "^7.4.3",
+    "express": "^4.18.2",
+    "pixi.js": "^8.9.2",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.14.10"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^18.2.11",
+    "@angular/cli": "^18.2.11",
+    "@angular/compiler-cli": "^18.2.0",
+    "@types/express": "^4.17.17",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^18.18.0",
+    "electron": "^36.3.2",
+    "electron-builder": "^26.0.12",
+    "jasmine-core": "~5.2.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "typescript": "~5.5.2"
+  }
+}
