@@ -57,13 +57,30 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
    */
   private onDragMove(event: FederatedPointerEvent) {
     if (this.draggedObject) {
+            console.log('--- onDragMove ---');
+            console.log(`Window Inner W/H: ${window.innerWidth} / ${window.innerHeight}`);
+            console.log(`App Renderer W/H: ${this.app.renderer.width} / ${this.app.renderer.height}`);
+            console.log(`Stage Scale X/Y: ${this.stage.scale.x.toFixed(2)} / ${this.stage.scale.y.toFixed(2)}`);
+            console.log(`Event Global X/Y: ${event.global.x.toFixed(2)} / ${event.global.y.toFixed(2)}`);
+
+            const parent = this.draggedObject.parent || this.app.stage;
+            const localPosition = parent.toLocal(event.global); // Pointer in stage's local (scaled) coordinates
+            console.log(`Local Pointer X/Y (in stage coords): ${localPosition.x.toFixed(2)} / ${localPosition.y.toFixed(2)}`);
+
+            // this.dragOffset is based on local (unscaled) rectangle dimensions, e.g., 25/25 for a 50x50 rect
+            console.log(`Drag Offset X/Y (local to rect): ${this.dragOffset.x} / ${this.dragOffset.y}`);
+
+            const newObjX = localPosition.x - this.dragOffset.x;
+            const newObjY = localPosition.y - this.dragOffset.y;
+            console.log(`Calculated New Obj X/Y (local in stage): ${newObjX.toFixed(2)} / ${newObjY.toFixed(2)}`);
+
       // Get the new global position of the pointer.
-      const newPosition = event.global.clone();
+      // const newPosition = event.global.clone(); // Already available as event.global for toLocal
 
       // Convert the global pointer position to the local coordinates of the dragged object's parent.
       // This is necessary because the object's x/y properties are relative to its parent.
-      const parent = this.draggedObject.parent || this.app.stage;
-      const localPosition = parent.toLocal(newPosition);
+      // const parent = this.draggedObject.parent || this.app.stage; // Already defined above
+      // const localPosition = parent.toLocal(event.global); // Already defined above
 
       // Update the dragged object's position, adjusting for the initial drag offset.
       this.draggedObject.x = localPosition.x - this.dragOffset.x;
