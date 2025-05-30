@@ -89,68 +89,91 @@ export class AppComponent implements AfterViewInit {
       backgroundColor: 0xADD8E6, // Light blue
       antialias: true
     });
+    console.log('Pixi Application instance:', this.app);
+    if (!this.app) {
+      console.error('Pixi Application object is null or undefined after instantiation!');
+      return;
+    }
 
-    // Set the stage
-    this.stage = this.app.stage;
+    console.log('Attempting to access pixi-container. Element found:', document.getElementById('pixi-container'));
+    if (!this.app.canvas) {
+      console.error('Pixi Application canvas is null or undefined before appendChild!');
+      return;
+    }
+    console.log('this.app.canvas before appendChild:', this.app.canvas);
 
-    // Append the canvas to the DOM
-    // For PixiJS v8, app.canvas is used instead of app.view
-    document.getElementById('pixi-container')?.appendChild(this.app.canvas as HTMLCanvasElement);
+    const containerElement = document.getElementById('pixi-container');
+    if (containerElement && this.app && this.app.canvas) {
+      containerElement.appendChild(this.app.canvas as HTMLCanvasElement);
+      
+      this.stage = this.app.stage;
+      console.log('Pixi Stage initialized:', this.stage);
 
-    // Create a button
-    const buttonContainer = new Container();
-    buttonContainer.x = 50;
-    buttonContainer.y = 50;
-    buttonContainer.eventMode = 'static'; // Make container interactive
-    buttonContainer.cursor = 'pointer';   // Set cursor for container
+      // Create a button
+      const buttonContainer = new Container();
+      buttonContainer.x = 50;
+      buttonContainer.y = 50;
+      buttonContainer.eventMode = 'static'; // Make container interactive
+      buttonContainer.cursor = 'pointer';   // Set cursor for container
 
-    const buttonBackground = new Graphics();
-    buttonBackground.beginFill(0x00FF00); // Green color
-    buttonBackground.drawRoundedRect(0, 0, 200, 50, 10); // x, y, width, height, radius
-    buttonBackground.endFill();
-    buttonBackground.eventMode = 'static'; // Make background interactive
-    buttonBackground.cursor = 'pointer';   // Set cursor for background
+      const buttonBackground = new Graphics();
+      buttonBackground.beginFill(0x00FF00); // Green color
+      buttonBackground.drawRoundedRect(0, 0, 200, 50, 10); // x, y, width, height, radius
+      buttonBackground.endFill();
+      buttonBackground.eventMode = 'static'; // Make background interactive
+      buttonBackground.cursor = 'pointer';   // Set cursor for background
 
-    const buttonText = new Text('Spawn Rectangle', {
-      fontSize: 24,
-      fill: 0x000000, // Black color
-      align: 'center'
-    });
-    buttonText.anchor.set(0.5); // Anchor to the center of the text
-    buttonText.x = buttonBackground.width / 2;
-    buttonText.y = buttonBackground.height / 2;
+      const buttonText = new Text('Spawn Rectangle', {
+        fontSize: 24,
+        fill: 0x000000, // Black color
+        align: 'center'
+      });
+      buttonText.anchor.set(0.5); // Anchor to the center of the text
+      buttonText.x = buttonBackground.width / 2;
+      buttonText.y = buttonBackground.height / 2;
 
-    buttonContainer.addChild(buttonBackground);
-    buttonContainer.addChild(buttonText);
+      buttonContainer.addChild(buttonBackground);
+      buttonContainer.addChild(buttonText);
 
-    this.stage.addChild(buttonContainer);
+      this.stage.addChild(buttonContainer);
+      console.log('Button added to stage');
 
-    // Event listener for the button to spawn rectangles
-    buttonContainer.on('pointerdown', () => {
-      // Create a new Graphics object for the rectangle
-      const rectangle = new Graphics();
+      // Event listener for the button to spawn rectangles
+      buttonContainer.on('pointerdown', () => {
+        // Create a new Graphics object for the rectangle
+        const rectangle = new Graphics();
 
-      // Style the rectangle: random fill color, specific size
-      rectangle.beginFill(Math.random() * 0xFFFFFF); // Random color
-      rectangle.drawRect(0, 0, 100, 100); // x, y, width, height
-      rectangle.endFill();
+        // Style the rectangle: random fill color, specific size
+        rectangle.beginFill(Math.random() * 0xFFFFFF); // Random color
+        rectangle.drawRect(0, 0, 100, 100); // x, y, width, height
+        rectangle.endFill();
 
-      // Position the new rectangle (e.g., to the right of the button)
-      rectangle.x = buttonContainer.x + buttonContainer.width + 20;
-      rectangle.y = buttonContainer.y;
+        // Position the new rectangle (e.g., to the right of the button)
+        rectangle.x = buttonContainer.x + buttonContainer.width + 20;
+        rectangle.y = buttonContainer.y;
 
-      // Make the rectangle interactive for dragging
-      rectangle.eventMode = 'static'; // Enable pointer events
-      rectangle.cursor = 'grab';      // Set initial cursor style
+        // Make the rectangle interactive for dragging
+        rectangle.eventMode = 'static'; // Enable pointer events
+        rectangle.cursor = 'grab';      // Set initial cursor style
 
-      // Attach the drag start listener to this new rectangle
-      rectangle.on('pointerdown', (event) => this.onDragStart(event, rectangle));
+        // Attach the drag start listener to this new rectangle
+        rectangle.on('pointerdown', (event) => this.onDragStart(event, rectangle));
 
-      // Add the new rectangle to the main stage
-      this.stage.addChild(rectangle);
-    });
+        // Add the new rectangle to the main stage
+        this.stage.addChild(rectangle);
+        console.log('Rectangle spawned');
+      });
 
-    // Application starts the ticker by default, so no need to manually start it
-    // or add a render function to the ticker.
+      // Application starts the ticker by default, so no need to manually start it
+      // or add a render function to the ticker.
+    } else {
+      if (!containerElement) {
+        console.error('pixi-container element not found in the DOM!');
+      }
+      // Check for app and canvas readiness, though earlier checks should catch this.
+      if (!this.app || !this.app.canvas) {
+        console.error('Pixi Application or its canvas is not ready for DOM insertion.');
+      }
+    }
   }
 }
