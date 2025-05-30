@@ -11,6 +11,8 @@ function createWindow() {
     }
   });
 
+  mainWindow.setAspectRatio(800 / 600); // Lock aspect ratio (e.g., 4:3)
+
   // Dynamically build the full path to index.html
   const indexPath = path.join(__dirname, '../dist/line2025/browser/index.html');
 
