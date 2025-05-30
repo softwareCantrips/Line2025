@@ -31,14 +31,14 @@ export class AppComponent implements AfterViewInit {
     // Calculate the offset between the pointer's global position and the object's global position.
     // This offset is used to maintain the object's relative position to the pointer during drag.
     const pointerPosition = event.global.clone();
-    const objectPosition = object.getGlobalPosition(); 
+    const objectPosition = object.getGlobalPosition();
 
     this.dragOffset.x = pointerPosition.x - objectPosition.x;
     this.dragOffset.y = pointerPosition.y - objectPosition.y;
-    
+
     // Make the stage interactive to listen for move and up events globally.
     // This ensures dragging continues smoothly even if the pointer moves outside the dragged object.
-    this.app.stage.eventMode = 'static'; 
+    this.app.stage.eventMode = 'static';
     this.app.stage.on('pointermove', this.onDragMove, this);
     this.app.stage.on('pointerup', this.onDragEnd, this);
     this.app.stage.on('pointerupoutside', this.onDragEnd, this);
@@ -55,9 +55,9 @@ export class AppComponent implements AfterViewInit {
 
       // Convert the global pointer position to the local coordinates of the dragged object's parent.
       // This is necessary because the object's x/y properties are relative to its parent.
-      const parent = this.draggedObject.parent || this.app.stage; 
+      const parent = this.draggedObject.parent || this.app.stage;
       const localPosition = parent.toLocal(newPosition);
-      
+
       // Update the dragged object's position, adjusting for the initial drag offset.
       this.draggedObject.x = localPosition.x - this.dragOffset.x;
       this.draggedObject.y = localPosition.y - this.dragOffset.y;
@@ -71,7 +71,7 @@ export class AppComponent implements AfterViewInit {
     if (this.draggedObject) {
       // Restore visual properties of the dragged object.
       this.draggedObject.alpha = 1;
-      this.draggedObject.cursor = 'grab'; 
+      this.draggedObject.cursor = 'grab';
       this.draggedObject = null; // Release the reference to the dragged object.
 
       // Remove global event listeners from the stage.
@@ -84,7 +84,7 @@ export class AppComponent implements AfterViewInit {
   async ngAfterViewInit(): Promise<void> {
     // Create a PIXI application
     this.app = new Application(); // Options can be passed here or to init
-    
+
     // Initialize the application (asynchronous operation)
     await this.app.init({
       width: window.innerWidth,
@@ -109,9 +109,13 @@ export class AppComponent implements AfterViewInit {
     const containerElement = document.getElementById('pixi-container');
     if (containerElement && this.app && this.app.canvas) {
       containerElement.appendChild(this.app.canvas as HTMLCanvasElement);
-      
+
       this.stage = this.app.stage;
       console.log('Pixi Stage initialized:', this.stage);
+
+      // Make the entire stage interactive to capture events more reliably for drag-and-drop
+      this.stage.hitArea = this.app.screen; // Set hit area to the entire screen
+      this.stage.eventMode = 'static';    // Ensure stage can receive pointer events
 
       // Create a button
       const buttonContainer = new Container();
