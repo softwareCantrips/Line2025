@@ -6,21 +6,8 @@
 
 // Old .back-button and .action-buttons-container rules removed.
 
-.top-bar-container {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  z-index: 100;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.top-bar-action-buttons {
-  display: flex;
-  gap: 10px;
-}
+// .top-bar-container and .top-bar-action-buttons styles removed as layout is now handled by global .page-button-panel.
 
 // .top-bar-back-button class is available if needed for specific styling,
 // but may not need styles if ReusableButtonComponent's default is fine.
+// This comment can also be removed if not relevant anymore.

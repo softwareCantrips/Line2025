@@ -1,14 +1,8 @@
-.test-page-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  text-align: center;
-}
-
-.back-button {
-  margin-top: 20px; // Add some space above the back button
-  padding: 10px 20px;
-  font-size: 16px;
+// src/app/test-page/test-page.component.scss
+.test-page-heading {
+  margin-top: 10px;  // Same top margin as the button panel
+  margin-left: 10px; // Same left margin as the button panel
+  padding-top: 90px; // Push text down below the absolute panel
+                     // This assumes panel has top:10px.
+                     // Effective top for text: 10px (margin) + 90px (padding) = 100px from viewport top.
 }

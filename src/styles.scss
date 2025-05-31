@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+
+// src/styles.scss (append this)
+
+.page-button-panel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 100; // Ensure it's above other content like PixiJS canvas
+  display: flex;
+  flex-direction: column;
+  gap: 10px; // Space between buttons
+}
