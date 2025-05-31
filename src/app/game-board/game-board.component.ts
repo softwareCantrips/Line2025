@@ -1,6 +1,6 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { Router } from '@angular/router'; // Import Router
-import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } from 'pixi.js'; // Added Point
+import { Application, Container, Graphics, Text, FederatedPointerEvent, Point, Assets, Sprite, Texture } from 'pixi.js';
 import { ReusableButtonComponent } from '../reusable-button/reusable-button.component';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
@@ -41,6 +41,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private anchorRectangles: AnchorRectangle[] = [];
   private showDiagnosticsText: boolean = false;
   private diagnosticsTextDisplay: Text | null = null;
+  private duckTexture: Texture | null = null;
   private spawnedRectangleSideLength: number = 40; // Default size, will be updated in ngAfterViewInit
 
   /**
@@ -171,11 +172,11 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       // Iterate over all anchor rectangles in the grid
       for (const anchor of this.anchorRectangles) {
         // Ensure draggedObject is treated as Graphics for getBounds, if not already guaranteed by type
-        const draggedGfx = this.draggedObject as Graphics;
+        const draggedItem = this.draggedObject; // this.draggedObject is Container, which is fine
         const anchorGfx = anchor.graphics;
 
         // Use getBounds() for robust collision detection, especially if stage scaling is involved.
-        const draggedBounds = draggedGfx.getBounds();
+        const draggedBounds = draggedItem.getBounds(); // Use draggedItem
         const anchorBounds = anchorGfx.getBounds(); // Get bounds of the specific anchor cell's graphics
 
         // AABB collision detection
@@ -193,8 +194,8 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
           // Snap the center of the dragged object to the center of this anchor cell
           // this.dragOffset is pre-calculated based on the local (unscaled) dimensions of the dragged object
-          draggedGfx.x = anchorCenterX - this.dragOffset.x;
-          draggedGfx.y = anchorCenterY - this.dragOffset.y;
+          draggedItem.x = anchorCenterX - this.dragOffset.x; // Use draggedItem
+          draggedItem.y = anchorCenterY - this.dragOffset.y; // Use draggedItem
 
           snapped = true; // Mark that snapping has occurred
           break; // Exit loop after snapping to the first collided anchor
@@ -237,6 +238,17 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     this.initialCanvasWidth = this.app.screen.width;
     this.initialCanvasHeight = this.app.screen.height;
     console.log(`Initial canvas dimensions stored: ${this.initialCanvasWidth}x${this.initialCanvasHeight}`);
+
+    // (after this.app.init and related checks)
+    console.log('Attempting to load duck texture...');
+    try {
+      this.duckTexture = await Assets.load('https://upload.wikimedia.org/wikipedia/commons/0/0b/Demorganducks.jpg');
+      console.log('Duck texture loaded successfully.');
+    } catch (error) {
+      console.error('Error loading duck texture:', error);
+      // Further error handling (e.g., setting a flag to disable spawning ducks) can be added here if needed.
+      // For now, spawning will be blocked by a check in handleSpawnRectangleClick if duckTexture is null.
+    }
 
     console.log('Attempting to access pixi-container. Element found:', document.getElementById('pixi-container'));
     if (!this.app.canvas) {
@@ -356,26 +368,48 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   }
 
   public handleSpawnRectangleClick(): void {
-    if (!this.stage || !this.app) return; // Guard if stage/app not ready
+    if (!this.stage || !this.app) { // Initial guards for stage and app
+      console.warn('Stage or App not ready, cannot spawn sprite.');
+      return;
+    }
+    if (!this.duckTexture) {
+      console.warn('Duck texture not loaded yet. Cannot spawn sprite.');
+      // Fallback idea (optional, not implemented in this step):
+      // const fallback = new Graphics();
+      // fallback.rect(0,0, this.spawnedRectangleSideLength, this.spawnedRectangleSideLength).fill(0xff0000); // Red square
+      // fallback.x = (this.app.screen.width / 2) - (this.spawnedRectangleSideLength / 2);
+      // fallback.y = (this.app.screen.height / 2) - (this.spawnedRectangleSideLength / 2);
+      // fallback.eventMode = 'static';
+      // fallback.cursor = 'grab';
+      // fallback.on('pointerdown', (event: FederatedPointerEvent) => this.onDragStart(event, fallback));
+      // this.stage.addChild(fallback);
+      // this.spawnedRectangles.push(fallback);
+      // console.log('Fallback Graphics object spawned.');
+      return; // Current instruction: just return if no texture
+    }
 
-    // Logic copied & adapted from the old PixiJS button's pointerdown event:
-    const rectangle = new Graphics();
-    const randomColor = Math.random() * 0xFFFFFF;
-    rectangle.rect(0, 0, this.spawnedRectangleSideLength, this.spawnedRectangleSideLength); // Use dynamic size
-    rectangle.fill({ color: randomColor });   // Then style
+    const sprite = new Sprite(this.duckTexture); // Create Sprite from loaded texture
 
-    // Position - try to place it near where the old buttons were, or a default spot
-    // For simplicity, let's place it at a fixed position or relative to canvas center for now
-    rectangle.x = (this.app.screen.width / 2) - 25;
-    rectangle.y = (this.app.screen.height / 2) - 25;
+    // Set dimensions to the dynamically calculated spawnedRectangleSideLength
+    sprite.width = this.spawnedRectangleSideLength;
+    sprite.height = this.spawnedRectangleSideLength;
 
-    rectangle.eventMode = 'static';
-    rectangle.cursor = 'grab';
-    rectangle.on('pointerdown', (event: FederatedPointerEvent) => this.onDragStart(event, rectangle));
+    // Position the new sprite (e.g., center of the canvas)
+    // Anchor for sprites defaults to 0,0 (top-left), so direct x/y setting is fine.
+    sprite.x = (this.app.screen.width / 2) - (sprite.width / 2);
+    sprite.y = (this.app.screen.height / 2) - (sprite.height / 2);
 
-    this.stage.addChild(rectangle);
-    this.spawnedRectangles.push(rectangle);
-    console.log('Rectangle spawned via HTML button and added to tracking array');
+    // Make the sprite interactive for dragging
+    sprite.eventMode = 'static';
+    sprite.cursor = 'grab';
+
+    // Attach the drag start listener (onDragStart expects a Container; Sprite is a Container)
+    sprite.on('pointerdown', (event: FederatedPointerEvent) => this.onDragStart(event, sprite));
+
+    // Add the new sprite to the main stage and tracking array
+    this.stage.addChild(sprite);
+    this.spawnedRectangles.push(sprite); // spawnedRectangles is Container[], Sprite is compatible
+    console.log('Sprite spawned with duck texture and added to tracking array');
   }
 
   public handleDeleteAllClick(): void {
