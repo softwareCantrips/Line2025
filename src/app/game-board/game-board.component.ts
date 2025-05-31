@@ -41,6 +41,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private anchorRectangles: AnchorRectangle[] = [];
   private showDiagnosticsText: boolean = false;
   private diagnosticsTextDisplay: Text | null = null;
+  private spawnedRectangleSideLength: number = 40; // Default size, will be updated in ngAfterViewInit
 
   /**
    * Handles the start of a drag operation on a Container (specifically, a Graphics object).
@@ -56,10 +57,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     // Calculate dragOffset based on the rectangle's known local (unscaled) dimensions.
     // This ensures the offset is correct for positioning within the stage's coordinate system,
     // especially when the stage itself is scaled.
-    const localRectangleWidth = 50;
-    const localRectangleHeight = 50;
-    this.dragOffset.x = localRectangleWidth / 2;
-    this.dragOffset.y = localRectangleHeight / 2;
+    // const localRectangleWidth = 50; // Old hardcoded value
+    // const localRectangleHeight = 50; // Old hardcoded value
+    this.dragOffset.x = this.spawnedRectangleSideLength / 2;
+    this.dragOffset.y = this.spawnedRectangleSideLength / 2;
 
     // Immediately update the object's position to snap its (local) center to the cursor
     // Use the new DOM-based move handler, passing the native PointerEvent
@@ -262,46 +263,62 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
         return;
       }
 
-      // Use the class constants for grid parameters
-      const availableWidth = this.app.screen.width - 2 * this.GRID_MARGIN;
-      const availableHeight = this.app.screen.height - 2 * this.GRID_MARGIN;
+      const availableWidthForGrid = this.app.screen.width - 2 * this.GRID_MARGIN;
+      const availableHeightForGrid = this.app.screen.height - 2 * this.GRID_MARGIN;
 
-      const cellWidth = (availableWidth - (this.GRID_COLS - 1) * this.CELL_SPACING) / this.GRID_COLS;
-      const cellHeight = (availableHeight - (this.GRID_ROWS - 1) * this.CELL_SPACING) / this.GRID_ROWS;
+      // Calculate potential side length based on width and height to maintain square shape
+      const potentialCellWidthBasedOnTotalWidth = (availableWidthForGrid - (this.GRID_COLS - 1) * this.CELL_SPACING) / this.GRID_COLS;
+      const potentialCellHeightBasedOnTotalHeight = (availableHeightForGrid - (this.GRID_ROWS - 1) * this.CELL_SPACING) / this.GRID_ROWS;
 
-      if (cellWidth <= 0 || cellHeight <= 0) {
-          console.warn("Calculated cell dimensions are not positive. Grid may not be visible or layout is incorrect.",
-                       {availableWidth, availableHeight, cellWidth, cellHeight});
-          // Optionally, don't draw the grid if dimensions are invalid
-          // return;
+      // Actual cell side length is the minimum of the two, ensuring cells are square and fit
+      // Use Math.floor to get integer pixel values, and Math.max to ensure a minimum size (e.g., 5px)
+      const actualCellSideLength = Math.max(5, Math.floor(Math.min(potentialCellWidthBasedOnTotalWidth, potentialCellHeightBasedOnTotalHeight)));
+
+      // Update the side length for spawned rectangles (e.g., 80% of anchor cell side, ensure integer and min size)
+      this.spawnedRectangleSideLength = Math.max(4, Math.floor(actualCellSideLength * 0.8));
+      console.log(`Anchor cell side length: ${actualCellSideLength}, Spawned rectangle side length: ${this.spawnedRectangleSideLength}`);
+
+      if (actualCellSideLength <= 0) {
+          console.warn("Calculated anchor cell dimensions are not positive. Grid may not be visible or layout is incorrect.",
+                       {availableWidthForGrid, availableHeightForGrid, actualCellSideLength});
+          // Optionally, do not proceed to draw the grid if dimensions are invalid
+      } else {
+          // Recalculate actual total grid dimensions using square cells
+          const totalGridWidth = this.GRID_COLS * actualCellSideLength + (this.GRID_COLS - 1) * this.CELL_SPACING;
+          const totalGridHeight = this.GRID_ROWS * actualCellSideLength + (this.GRID_ROWS - 1) * this.CELL_SPACING;
+
+          // Calculate offsets to center the new square grid within the original GRID_MARGIN space
+          const gridXOffset = (this.app.screen.width - totalGridWidth) / 2;
+          const gridYOffset = (this.app.screen.height - totalGridHeight) / 2;
+
+          for (let row = 0; row < this.GRID_ROWS; row++) {
+            for (let col = 0; col < this.GRID_COLS; col++) {
+              // Use new offsets and actualCellSideLength
+              const anchorX = gridXOffset + col * (actualCellSideLength + this.CELL_SPACING);
+              const anchorY = gridYOffset + row * (actualCellSideLength + this.CELL_SPACING);
+
+              const anchorGraphics = new Graphics();
+
+              // Style the anchor cell (square)
+              anchorGraphics.rect(0, 0, actualCellSideLength, actualCellSideLength); // Use actualCellSideLength for both
+              anchorGraphics.fill({ color: 0xEEEEEE });
+              anchorGraphics.stroke({ width: 1, color: 0xBBBBBB });
+
+              anchorGraphics.x = anchorX;
+              anchorGraphics.y = anchorY;
+
+              this.stage.addChild(anchorGraphics);
+              this.anchorRectangles.push({
+                x: anchorX,
+                y: anchorY,
+                width: actualCellSideLength, // Use actualCellSideLength
+                height: actualCellSideLength, // Use actualCellSideLength
+                graphics: anchorGraphics
+              });
+            }
+          }
+          console.log(`${this.GRID_ROWS * this.GRID_COLS} anchor grid cells created.`);
       }
-
-      for (let row = 0; row < this.GRID_ROWS; row++) {
-        for (let col = 0; col < this.GRID_COLS; col++) {
-          const anchorX = this.GRID_MARGIN + col * (cellWidth + this.CELL_SPACING);
-          const anchorY = this.GRID_MARGIN + row * (cellHeight + this.CELL_SPACING);
-
-          const anchorGraphics = new Graphics();
-
-          // Style the anchor cell (using new v8 API order)
-          anchorGraphics.rect(0, 0, cellWidth, cellHeight); // Define shape
-          anchorGraphics.fill({ color: 0xEEEEEE });        // Apply fill (light gray)
-          anchorGraphics.stroke({ width: 1, color: 0xBBBBBB }); // Apply stroke (thinner, lighter border)
-
-          anchorGraphics.x = anchorX;
-          anchorGraphics.y = anchorY;
-
-          this.stage.addChild(anchorGraphics);
-          this.anchorRectangles.push({
-            x: anchorX,
-            y: anchorY,
-            width: cellWidth,
-            height: cellHeight,
-            graphics: anchorGraphics
-          });
-        }
-      }
-      console.log(`${this.GRID_ROWS * this.GRID_COLS} anchor grid cells created.`);
       // --- End of New Anchor Grid Creation ---
 
       this.boundHandleResize = this.handleResize.bind(this);
@@ -344,7 +361,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     // Logic copied & adapted from the old PixiJS button's pointerdown event:
     const rectangle = new Graphics();
     const randomColor = Math.random() * 0xFFFFFF;
-    rectangle.rect(0, 0, 50, 50); // Shape first
+    rectangle.rect(0, 0, this.spawnedRectangleSideLength, this.spawnedRectangleSideLength); // Use dynamic size
     rectangle.fill({ color: randomColor });   // Then style
 
     // Position - try to place it near where the old buttons were, or a default spot
