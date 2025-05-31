@@ -1,0 +1,14 @@
+#pixi-container {
+  width: 100%;
+  height: 100vh;
+  display: block;
+}
+
+.back-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 8px 15px;
+  font-size: 14px;
+  z-index: 100; // Ensure it's above the canvas
+}

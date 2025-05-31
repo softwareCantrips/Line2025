@@ -1,0 +1,14 @@
+.test-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.back-button {
+  margin-top: 20px; // Add some space above the back button
+  padding: 10px 20px;
+  font-size: 16px;
+}
