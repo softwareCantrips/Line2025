@@ -21,6 +21,11 @@ export interface AnchorRectangle {
   styleUrls: ['./game-board.component.scss'] // Changed styleUrls
 })
 export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed class
+  private readonly GRID_ROWS: number = 12;
+  private readonly GRID_COLS: number = 12;
+  private readonly GRID_MARGIN: number = 50; // Pixels from canvas edge for the grid container
+  private readonly CELL_SPACING: number = 2; // Pixels between anchor cells
+
   constructor(private router: Router) {} // Inject Router
 
   private app!: Application;
@@ -33,7 +38,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
-  private anchorRectangle: AnchorRectangle | null = null;
+  private anchorRectangles: AnchorRectangle[] = [];
   private showDiagnosticsText: boolean = false;
   private diagnosticsTextDisplay: Text | null = null;
 
@@ -160,25 +165,42 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
   private onDragEnd() {
     if (this.draggedObject) {
-      if (this.anchorRectangle) {
+      // --- Start of New Grid Snapping Logic ---
+      let snapped = false; // Flag to ensure we only snap to one anchor
+      // Iterate over all anchor rectangles in the grid
+      for (const anchor of this.anchorRectangles) {
+        // Ensure draggedObject is treated as Graphics for getBounds, if not already guaranteed by type
         const draggedGfx = this.draggedObject as Graphics;
-        const anchorGfx = this.anchorRectangle.graphics;
-        const draggedBounds = draggedGfx.getBounds();
-        const anchorBounds = anchorGfx.getBounds();
+        const anchorGfx = anchor.graphics;
 
+        // Use getBounds() for robust collision detection, especially if stage scaling is involved.
+        const draggedBounds = draggedGfx.getBounds();
+        const anchorBounds = anchorGfx.getBounds(); // Get bounds of the specific anchor cell's graphics
+
+        // AABB collision detection
         const collision = draggedBounds.x < anchorBounds.x + anchorBounds.width &&
                          draggedBounds.x + draggedBounds.width > anchorBounds.x &&
                          draggedBounds.y < anchorBounds.y + anchorBounds.height &&
                          draggedBounds.y + draggedBounds.height > anchorBounds.y;
 
         if (collision) {
-          console.log('Collision detected! Snapping rectangle to anchor.');
-          const anchorCenterX = anchorGfx.x + this.anchorRectangle.width / 2;
-          const anchorCenterY = anchorGfx.y + this.anchorRectangle.height / 2;
+          console.log('Collision detected with an anchor cell! Snapping rectangle.');
+          // Calculate the center of the *collided* anchor cell
+          // Use anchor.x, anchor.y, anchor.width, anchor.height which are the unscaled, stage-relative values
+          const anchorCenterX = anchor.x + anchor.width / 2;
+          const anchorCenterY = anchor.y + anchor.height / 2;
+
+          // Snap the center of the dragged object to the center of this anchor cell
+          // this.dragOffset is pre-calculated based on the local (unscaled) dimensions of the dragged object
           draggedGfx.x = anchorCenterX - this.dragOffset.x;
           draggedGfx.y = anchorCenterY - this.dragOffset.y;
+
+          snapped = true; // Mark that snapping has occurred
+          break; // Exit loop after snapping to the first collided anchor
         }
       }
+      // If (snapped) { /* any post-snap logic if needed, though break handles it */ }
+      // --- End of New Grid Snapping Logic ---
 
       this.draggedObject.alpha = 1;
       this.draggedObject.cursor = 'grab';
@@ -234,20 +256,53 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
       // PixiJS button creation code removed
 
-      const anchorWidth = 150;
-      const anchorHeight = 150;
-      const anchorX = (this.app.screen.width - anchorWidth) / 2;
-      const anchorY = (this.app.screen.height - anchorHeight) / 2;
+      // --- Start of New Anchor Grid Creation ---
+      if (!this.app || !this.stage) {
+        console.error("Pixi Application or Stage not ready for anchor grid creation");
+        return;
+      }
 
-      const anchorGraphics = new Graphics();
-      anchorGraphics.rect(0, 0, anchorWidth, anchorHeight);
-      anchorGraphics.fill({ color: 0xCCCCCC });
-      anchorGraphics.stroke({ width: 2, color: 0x333333, alpha: 1 });
-      anchorGraphics.x = anchorX;
-      anchorGraphics.y = anchorY;
-      this.stage.addChild(anchorGraphics);
-      this.anchorRectangle = { x: anchorX, y: anchorY, width: anchorWidth, height: anchorHeight, graphics: anchorGraphics };
-      console.log('Anchor rectangle created and added to stage');
+      // Use the class constants for grid parameters
+      const availableWidth = this.app.screen.width - 2 * this.GRID_MARGIN;
+      const availableHeight = this.app.screen.height - 2 * this.GRID_MARGIN;
+
+      const cellWidth = (availableWidth - (this.GRID_COLS - 1) * this.CELL_SPACING) / this.GRID_COLS;
+      const cellHeight = (availableHeight - (this.GRID_ROWS - 1) * this.CELL_SPACING) / this.GRID_ROWS;
+
+      if (cellWidth <= 0 || cellHeight <= 0) {
+          console.warn("Calculated cell dimensions are not positive. Grid may not be visible or layout is incorrect.",
+                       {availableWidth, availableHeight, cellWidth, cellHeight});
+          // Optionally, don't draw the grid if dimensions are invalid
+          // return;
+      }
+
+      for (let row = 0; row < this.GRID_ROWS; row++) {
+        for (let col = 0; col < this.GRID_COLS; col++) {
+          const anchorX = this.GRID_MARGIN + col * (cellWidth + this.CELL_SPACING);
+          const anchorY = this.GRID_MARGIN + row * (cellHeight + this.CELL_SPACING);
+
+          const anchorGraphics = new Graphics();
+
+          // Style the anchor cell (using new v8 API order)
+          anchorGraphics.rect(0, 0, cellWidth, cellHeight); // Define shape
+          anchorGraphics.fill({ color: 0xEEEEEE });        // Apply fill (light gray)
+          anchorGraphics.stroke({ width: 1, color: 0xBBBBBB }); // Apply stroke (thinner, lighter border)
+
+          anchorGraphics.x = anchorX;
+          anchorGraphics.y = anchorY;
+
+          this.stage.addChild(anchorGraphics);
+          this.anchorRectangles.push({
+            x: anchorX,
+            y: anchorY,
+            width: cellWidth,
+            height: cellHeight,
+            graphics: anchorGraphics
+          });
+        }
+      }
+      console.log(`${this.GRID_ROWS * this.GRID_COLS} anchor grid cells created.`);
+      // --- End of New Anchor Grid Creation ---
 
       this.boundHandleResize = this.handleResize.bind(this);
       window.addEventListener('resize', this.boundHandleResize);
