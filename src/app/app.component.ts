@@ -292,9 +292,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       buttonContainer.cursor = 'pointer';   // Set cursor for container
 
       const buttonBackground = new Graphics();
-      buttonBackground.beginFill(0x00FF00); // Green color
-      buttonBackground.drawRoundedRect(0, 0, 100, 25, 5); // x, y, width, height, radius (50% smaller)
-      buttonBackground.endFill();
+      buttonBackground.fill({ color: 0x00FF00 }); // Green color
+      buttonBackground.roundRect(0, 0, 100, 25, 5); // x, y, width, height, radius (50% smaller)
       this.addButtonHoverEffect(buttonBackground, 0xAAFFAA); // Apply hover effect (lighter green)
       buttonBackground.eventMode = 'static'; // Make background interactive
       buttonBackground.cursor = 'pointer';   // Set cursor for background
@@ -320,9 +319,9 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
         const rectangle = new Graphics();
 
         // Style the rectangle: random fill color, specific size
-        rectangle.beginFill(Math.random() * 0xFFFFFF); // Random color
-        rectangle.drawRect(0, 0, 50, 50); // x, y, width, height (now 50x50)
-        rectangle.endFill();
+        const randomColor = Math.random() * 0xFFFFFF;
+        rectangle.fill({ color: randomColor });
+        rectangle.rect(0, 0, 50, 50); // x, y, width, height
 
         // Position the new rectangle (e.g., to the right of the button)
         rectangle.x = buttonContainer.x + buttonContainer.width + 20;
@@ -345,9 +344,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       const deleteButtonContainer = new Container();
 
       const deleteButtonBackground = new Graphics();
-      deleteButtonBackground.beginFill(0xFF0000); // Red color
-      deleteButtonBackground.drawRoundedRect(0, 0, 100, 25, 5); // 50% smaller dimensions
-      deleteButtonBackground.endFill();
+      deleteButtonBackground.fill({ color: 0xFF0000 }); // Red color
+      deleteButtonBackground.roundRect(0, 0, 100, 25, 5); // 50% smaller dimensions
       this.addButtonHoverEffect(deleteButtonBackground, 0xFF5555); // Lighter red hover
       deleteButtonBackground.eventMode = 'static';
       deleteButtonBackground.cursor = 'pointer';
@@ -395,10 +393,9 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
       // Create Graphics object for the anchor
       const anchorGraphics = new Graphics();
-      anchorGraphics.beginFill(0xCCCCCC); // Light gray color
-      anchorGraphics.lineStyle(2, 0x333333, 1); // Dark gray border
-      anchorGraphics.drawRect(0, 0, anchorWidth, anchorHeight);
-      anchorGraphics.endFill();
+      anchorGraphics.fill({ color: 0xCCCCCC }); // Light gray color
+      anchorGraphics.stroke({ width: 2, color: 0x333333, alpha: 1 }); // Dark gray border
+      anchorGraphics.rect(0, 0, anchorWidth, anchorHeight);
       anchorGraphics.x = anchorX;
       anchorGraphics.y = anchorY;
 
