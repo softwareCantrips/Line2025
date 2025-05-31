@@ -4,6 +4,14 @@ import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } 
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
 
+export interface AnchorRectangle {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  graphics: Graphics;
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -22,6 +30,7 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
   private draggedObject: Container | null = null; // Holds the object currently being dragged (Graphics objects are Containers)
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
+  private anchorRectangle: AnchorRectangle | null = null;
 
   /**
    * Handles the start of a drag operation on a Container (specifically, a Graphics object).
@@ -176,6 +185,37 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
    */
   private onDragEnd() {
     if (this.draggedObject) {
+      // Check for overlap with anchor rectangle
+      if (this.anchorRectangle) {
+        const draggedGfx = this.draggedObject as Graphics; // Assuming draggedObject is always a Graphics object
+        const anchorGfx = this.anchorRectangle.graphics;
+
+        // It's important to use getBounds() for collision detection as it gives global coordinates.
+        // For objects within the same parent (this.stage), if the stage itself is scaled,
+        // these bounds will reflect that scaling.
+        const draggedBounds = draggedGfx.getBounds();
+        const anchorBounds = anchorGfx.getBounds();
+
+        // AABB collision detection
+        const collision = draggedBounds.x < anchorBounds.x + anchorBounds.width &&
+                         draggedBounds.x + draggedBounds.width > anchorBounds.x &&
+                         draggedBounds.y < anchorBounds.y + anchorBounds.height &&
+                         draggedBounds.y + draggedBounds.height > anchorBounds.y;
+
+        if (collision) {
+          console.log('Collision detected! Snapping rectangle to anchor.');
+          // Calculate anchor's center using its stage coordinates and original dimensions
+          // (this.anchorRectangle.width/height are unscaled, matching the coordinate system of anchorGfx.x/y)
+          const anchorCenterX = anchorGfx.x + this.anchorRectangle.width / 2;
+          const anchorCenterY = anchorGfx.y + this.anchorRectangle.height / 2;
+
+          // Snap the center of the dragged object to the center of the anchor
+          // this.dragOffset is pre-calculated based on the local (unscaled) dimensions of the dragged object
+          draggedGfx.x = anchorCenterX - this.dragOffset.x;
+          draggedGfx.y = anchorCenterY - this.dragOffset.y;
+        }
+      }
+
       // Restore visual properties of the dragged object.
       this.draggedObject.alpha = 1;
       this.draggedObject.cursor = 'grab';
@@ -346,6 +386,28 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
         }
         console.log('All spawned rectangles deleted.');
       });
+
+      // Define anchor dimensions and position
+      const anchorWidth = 150;
+      const anchorHeight = 150;
+      const anchorX = (this.app.screen.width - anchorWidth) / 2;
+      const anchorY = (this.app.screen.height - anchorHeight) / 2;
+
+      // Create Graphics object for the anchor
+      const anchorGraphics = new Graphics();
+      anchorGraphics.beginFill(0xCCCCCC); // Light gray color
+      anchorGraphics.lineStyle(2, 0x333333, 1); // Dark gray border
+      anchorGraphics.drawRect(0, 0, anchorWidth, anchorHeight);
+      anchorGraphics.endFill();
+      anchorGraphics.x = anchorX;
+      anchorGraphics.y = anchorY;
+
+      // Add anchor to the stage
+      this.stage.addChild(anchorGraphics);
+
+      // Initialize this.anchorRectangle
+      this.anchorRectangle = { x: anchorX, y: anchorY, width: anchorWidth, height: anchorHeight, graphics: anchorGraphics };
+      console.log('Anchor rectangle created and added to stage');
 
       // Application starts the ticker by default, so no need to manually start it
       // or add a render function to the ticker.
