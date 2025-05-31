@@ -1,6 +1,9 @@
-<div class="action-buttons-container">
-  <app-reusable-button label="Spawn Rectangle" buttonType="spawn" (onClick)="handleSpawnRectangleClick()"></app-reusable-button>
-  <app-reusable-button label="Delete All" buttonType="delete" (onClick)="handleDeleteAllClick()"></app-reusable-button>
+<div class="top-bar-container">
+  <app-reusable-button label="Back to Main Menu" buttonType="nav" (onClick)="navigateToMainMenu()" class="top-bar-back-button"></app-reusable-button>
+  <div class="top-bar-action-buttons">
+    <app-reusable-button label="Spawn Rectangle" buttonType="spawn" (onClick)="handleSpawnRectangleClick()"></app-reusable-button>
+    <app-reusable-button label="Delete All" buttonType="delete" (onClick)="handleDeleteAllClick()"></app-reusable-button>
+    <app-reusable-button label="Diagnostics" buttonType="default" (onClick)="toggleDiagnostics()"></app-reusable-button>
+  </div>
 </div>
 <div id="pixi-container"></div>
-<app-reusable-button label="Back to Main Menu" buttonType="nav" (onClick)="navigateToMainMenu()" class="back-button"></app-reusable-button>

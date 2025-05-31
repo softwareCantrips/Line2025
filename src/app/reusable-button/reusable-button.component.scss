@@ -15,6 +15,24 @@
   &:active {
     opacity: 0.7;
   }
+
+  &:disabled,
+  &[disabled] { // Cover both ways disabled might be applied/reflected
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #DDDDDD; // More specific disabled background
+    color: #888888;           // Darker gray text
+    border-color: #CCCCCC;
+
+    // Override type-specific hover effects when disabled
+    &.btn-spawn:hover,
+    &.btn-delete:hover,
+    &.btn-nav:hover,
+    &.btn-default:hover {
+      background-color: #DDDDDD; // Keep disabled background on hover
+      // any other specific hover styles that need resetting
+    }
+  }
 }
 
 .btn-spawn {

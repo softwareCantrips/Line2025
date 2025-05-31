@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common'; // For ngClass
 export class ReusableButtonComponent {
   @Input() label: string = 'Button';
   @Input() buttonType: 'spawn' | 'delete' | 'default' | 'nav' = 'default';
+  @Input() disabled: boolean = false; // New input
   @Output() onClick = new EventEmitter<MouseEvent>();
 
   onButtonClicked(event: MouseEvent) {

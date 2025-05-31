@@ -4,22 +4,23 @@
   display: block;
 }
 
-.back-button {
+// Old .back-button and .action-buttons-container rules removed.
+
+.top-bar-container {
   position: absolute;
   top: 10px;
   left: 10px;
-  padding: 8px 15px;
-  font-size: 14px;
-  z-index: 100; // Ensure it's above the canvas
+  right: 10px;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.action-buttons-container {
-  position: absolute;
-  top: 10px;
-  // left: 10px; // Back button is here, so shift these over or manage layout
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100; // Ensure above canvas
+.top-bar-action-buttons {
   display: flex;
-  gap: 10px; // Space between buttons
+  gap: 10px;
 }
+
+// .top-bar-back-button class is available if needed for specific styling,
+// but may not need styles if ReusableButtonComponent's default is fine.

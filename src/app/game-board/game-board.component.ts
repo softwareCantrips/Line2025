@@ -34,6 +34,8 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   private spawnedRectangles: Container[] = []; // Array to keep track of all spawned rectangles
   private anchorRectangle: AnchorRectangle | null = null;
+  private showDiagnosticsText: boolean = false;
+  private diagnosticsTextDisplay: Text | null = null;
 
   /**
    * Handles the start of a drag operation on a Container (specifically, a Graphics object).
@@ -153,6 +155,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     } else {
         console.warn('handleResize called but PixiJS app or renderer not ready.');
     }
+    this.updateDiagnosticsDisplay(); // Add this call
   }
 
   private onDragEnd() {
@@ -315,5 +318,38 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       }
     }
     console.log('All spawned rectangles deleted via HTML button.');
+  }
+
+  public toggleDiagnostics(): void {
+    this.showDiagnosticsText = !this.showDiagnosticsText;
+    this.updateDiagnosticsDisplay();
+  }
+
+  private updateDiagnosticsDisplay(): void {
+    if (!this.app || !this.stage) return; // Ensure app and stage are available
+
+    if (this.showDiagnosticsText) {
+      if (!this.diagnosticsTextDisplay) {
+        this.diagnosticsTextDisplay = new Text({
+          text: '',
+          style: {
+            fontSize: 14,
+            fill: 0xffffff,
+            stroke: { color: 0x000000, width: 2 }, // Using object style for v8 Text
+            align: 'right'
+          }
+        });
+        this.diagnosticsTextDisplay.anchor.set(1, 0); // Anchor top-right
+        this.stage.addChild(this.diagnosticsTextDisplay);
+      }
+      this.diagnosticsTextDisplay.text = `Canvas: ${this.app.screen.width} x ${this.app.screen.height}`;
+      this.diagnosticsTextDisplay.x = this.app.screen.width - 10;
+      this.diagnosticsTextDisplay.y = 10;
+      this.diagnosticsTextDisplay.visible = true;
+    } else {
+      if (this.diagnosticsTextDisplay) {
+        this.diagnosticsTextDisplay.visible = false;
+      }
+    }
   }
 }
