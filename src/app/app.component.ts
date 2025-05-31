@@ -292,8 +292,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       buttonContainer.cursor = 'pointer';   // Set cursor for container
 
       const buttonBackground = new Graphics();
-      buttonBackground.fill({ color: 0x00FF00 }); // Green color
       buttonBackground.roundRect(0, 0, 100, 25, 5); // x, y, width, height, radius (50% smaller)
+      buttonBackground.fill({ color: 0x00FF00 }); // Green color
       this.addButtonHoverEffect(buttonBackground, 0xAAFFAA); // Apply hover effect (lighter green)
       buttonBackground.eventMode = 'static'; // Make background interactive
       buttonBackground.cursor = 'pointer';   // Set cursor for background
@@ -320,8 +320,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
         // Style the rectangle: random fill color, specific size
         const randomColor = Math.random() * 0xFFFFFF;
-        rectangle.fill({ color: randomColor });
         rectangle.rect(0, 0, 50, 50); // x, y, width, height
+        rectangle.fill({ color: randomColor });   // Then style
 
         // Position the new rectangle (e.g., to the right of the button)
         rectangle.x = buttonContainer.x + buttonContainer.width + 20;
@@ -344,8 +344,8 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
       const deleteButtonContainer = new Container();
 
       const deleteButtonBackground = new Graphics();
-      deleteButtonBackground.fill({ color: 0xFF0000 }); // Red color
       deleteButtonBackground.roundRect(0, 0, 100, 25, 5); // 50% smaller dimensions
+      deleteButtonBackground.fill({ color: 0xFF0000 }); // Red color
       this.addButtonHoverEffect(deleteButtonBackground, 0xFF5555); // Lighter red hover
       deleteButtonBackground.eventMode = 'static';
       deleteButtonBackground.cursor = 'pointer';
@@ -393,9 +393,9 @@ export class AppComponent implements AfterViewInit, OnDestroy { // Implemented O
 
       // Create Graphics object for the anchor
       const anchorGraphics = new Graphics();
-      anchorGraphics.fill({ color: 0xCCCCCC }); // Light gray color
-      anchorGraphics.stroke({ width: 2, color: 0x333333, alpha: 1 }); // Dark gray border
-      anchorGraphics.rect(0, 0, anchorWidth, anchorHeight);
+      anchorGraphics.rect(0, 0, anchorWidth, anchorHeight);         // Shape first
+      anchorGraphics.fill({ color: 0xCCCCCC });                     // Then fill
+      anchorGraphics.stroke({ width: 2, color: 0x333333, alpha: 1 }); // Then stroke
       anchorGraphics.x = anchorX;
       anchorGraphics.y = anchorY;
 
