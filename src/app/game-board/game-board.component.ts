@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { Router } from '@angular/router'; // Import Router
 import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } from 'pixi.js'; // Added Point
-import { ReusableButtonComponent } from '../../reusable-button/reusable-button.component';
+import { ReusableButtonComponent } from '../reusable-button/reusable-button.component';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
 

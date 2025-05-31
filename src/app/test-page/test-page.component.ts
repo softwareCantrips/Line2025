@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router'; // Import Router
-import { ReusableButtonComponent } from '../../reusable-button/reusable-button.component';
+import { ReusableButtonComponent } from '../reusable-button/reusable-button.component';
 
 @Component({
   selector: 'app-test-page',
