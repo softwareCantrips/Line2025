@@ -449,8 +449,24 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
         this.stage.addChild(this.diagnosticsTextDisplay);
       }
       this.diagnosticsTextDisplay.text = `Canvas: ${this.app.screen.width} x ${this.app.screen.height}`;
-      this.diagnosticsTextDisplay.x = this.app.screen.width - 10;
-      this.diagnosticsTextDisplay.y = 10;
+      // Position it in the top-right corner of the original stage area,
+      // adjusting the margin for the current scale.
+      // The text object's anchor is (1,0) [top-right].
+      const margin = 10; // Desired screen-space margin in pixels
+
+      if (this.initialCanvasWidth > 0 && this.stage.scale.x !== 0) {
+          this.diagnosticsTextDisplay.x = this.initialCanvasWidth - (margin / this.stage.scale.x);
+      } else {
+          // Fallback if initialCanvasWidth isn't set or scale is zero (to avoid errors)
+          this.diagnosticsTextDisplay.x = this.app.screen.width - margin;
+      }
+
+      if (this.stage.scale.y !== 0) {
+          this.diagnosticsTextDisplay.y = margin / this.stage.scale.y;
+      } else {
+          // Fallback if scale is zero
+          this.diagnosticsTextDisplay.y = margin;
+      }
       this.diagnosticsTextDisplay.visible = true;
     } else {
       if (this.diagnosticsTextDisplay) {
