@@ -1,2 +1,6 @@
+<div class="action-buttons-container">
+  <app-reusable-button label="Spawn Rectangle" buttonType="spawn" (onClick)="handleSpawnRectangleClick()"></app-reusable-button>
+  <app-reusable-button label="Delete All" buttonType="delete" (onClick)="handleDeleteAllClick()"></app-reusable-button>
+</div>
 <div id="pixi-container"></div>
-<button routerLink="/" class="back-button">Back to Main Menu</button>
+<app-reusable-button label="Back to Main Menu" buttonType="nav" (onClick)="navigateToMainMenu()" class="back-button"></app-reusable-button>

@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
-import { RouterLink } from '@angular/router'; // Import RouterLink
+import { Router } from '@angular/router'; // Import Router
 import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } from 'pixi.js'; // Added Point
+import { ReusableButtonComponent } from '../../reusable-button/reusable-button.component';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
 
@@ -15,11 +16,13 @@ export interface AnchorRectangle {
 @Component({
   selector: 'app-game-board', // Changed selector
   standalone: true,
-  imports: [RouterLink], // Added RouterLink, removed RouterOutlet
+  imports: [ReusableButtonComponent], // Removed RouterLink, kept ReusableButtonComponent
   templateUrl: './game-board.component.html', // Changed templateUrl
   styleUrls: ['./game-board.component.scss'] // Changed styleUrls
 })
 export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed class
+  constructor(private router: Router) {} // Inject Router
+
   private app!: Application;
   private stage!: Container;
   private boundHandleResize!: () => void; // For window resize event listener
@@ -189,17 +192,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     }
   }
 
-  private addButtonHoverEffect(buttonGraphic: Graphics, hoverTint: number = 0xDDDDDD): void {
-    const initialTint = buttonGraphic.tint;
-
-    buttonGraphic.on('pointerover', () => {
-        buttonGraphic.tint = hoverTint;
-    });
-
-    buttonGraphic.on('pointerout', () => {
-        buttonGraphic.tint = initialTint;
-    });
-  }
+  // addButtonHoverEffect method removed as it's no longer used
 
   async ngAfterViewInit(): Promise<void> {
     this.app = new Application();
@@ -236,85 +229,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       this.stage.hitArea = this.app.screen;
       this.stage.eventMode = 'static';
 
-      const buttonContainer = new Container();
-      buttonContainer.x = 50;
-      buttonContainer.y = 50;
-      buttonContainer.eventMode = 'static';
-      buttonContainer.cursor = 'pointer';
-
-      const buttonBackground = new Graphics();
-      buttonBackground.roundRect(0, 0, 100, 25, 5);
-      buttonBackground.fill({ color: 0x00FF00 });
-      this.addButtonHoverEffect(buttonBackground, 0xAAFFAA);
-      buttonBackground.eventMode = 'static';
-      buttonBackground.cursor = 'pointer';
-
-      const buttonText = new Text('Spawn Rectangle', {
-        fontSize: 12,
-        fill: 0x000000,
-        align: 'center'
-      });
-      buttonText.anchor.set(0.5);
-      buttonText.x = buttonBackground.width / 2;
-      buttonText.y = buttonBackground.height / 2;
-
-      buttonContainer.addChild(buttonBackground);
-      buttonContainer.addChild(buttonText);
-
-      this.stage.addChild(buttonContainer);
-      console.log('Button added to stage');
-
-      buttonContainer.on('pointerdown', () => {
-        const rectangle = new Graphics();
-        const randomColor = Math.random() * 0xFFFFFF;
-        rectangle.rect(0, 0, 50, 50);
-        rectangle.fill({ color: randomColor });
-
-        rectangle.x = buttonContainer.x + buttonContainer.width + 20;
-        rectangle.y = buttonContainer.y;
-        rectangle.eventMode = 'static';
-        rectangle.cursor = 'grab';
-        rectangle.on('pointerdown', (event) => this.onDragStart(event, rectangle));
-        this.stage.addChild(rectangle);
-        this.spawnedRectangles.push(rectangle);
-        console.log('Rectangle spawned and added to tracking array');
-      });
-
-      const deleteButtonContainer = new Container();
-      const deleteButtonBackground = new Graphics();
-      deleteButtonBackground.roundRect(0, 0, 100, 25, 5);
-      deleteButtonBackground.fill({ color: 0xFF0000 });
-      this.addButtonHoverEffect(deleteButtonBackground, 0xFF5555);
-      deleteButtonBackground.eventMode = 'static';
-      deleteButtonBackground.cursor = 'pointer';
-
-      const deleteButtonText = new Text('Delete All', {
-        fontSize: 12,
-        fill: 0xFFFFFF,
-        align: 'center'
-      });
-      deleteButtonText.anchor.set(0.5);
-      deleteButtonText.x = deleteButtonBackground.width / 2;
-      deleteButtonText.y = deleteButtonBackground.height / 2;
-
-      deleteButtonContainer.addChild(deleteButtonBackground, deleteButtonText);
-      deleteButtonContainer.x = buttonContainer.x + buttonContainer.width + 20;
-      deleteButtonContainer.y = buttonContainer.y;
-      deleteButtonContainer.eventMode = 'static';
-      deleteButtonContainer.cursor = 'pointer';
-      this.stage.addChild(deleteButtonContainer);
-      console.log('Delete All button added to stage');
-
-      deleteButtonContainer.on('pointerdown', () => {
-        while (this.spawnedRectangles.length > 0) {
-            const rectangle = this.spawnedRectangles.pop();
-            if (rectangle) {
-                this.stage.removeChild(rectangle);
-                rectangle.destroy({ children: true });
-            }
-        }
-        console.log('All spawned rectangles deleted.');
-      });
+      // PixiJS button creation code removed
 
       const anchorWidth = 150;
       const anchorHeight = 150;
@@ -359,5 +274,46 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     //     this.app.destroy(true, { children: true, texture: true, basePath: true });
     //     console.log('PixiJS Application destroyed.');
     // }
+  }
+
+  navigateToMainMenu() {
+    this.router.navigate(['/']); // Navigate to default route (main-menu)
+  }
+
+  public handleSpawnRectangleClick(): void {
+    if (!this.stage || !this.app) return; // Guard if stage/app not ready
+
+    // Logic copied & adapted from the old PixiJS button's pointerdown event:
+    const rectangle = new Graphics();
+    const randomColor = Math.random() * 0xFFFFFF;
+    rectangle.rect(0, 0, 50, 50); // Shape first
+    rectangle.fill({ color: randomColor });   // Then style
+
+    // Position - try to place it near where the old buttons were, or a default spot
+    // For simplicity, let's place it at a fixed position or relative to canvas center for now
+    rectangle.x = (this.app.screen.width / 2) - 25;
+    rectangle.y = (this.app.screen.height / 2) - 25;
+
+    rectangle.eventMode = 'static';
+    rectangle.cursor = 'grab';
+    rectangle.on('pointerdown', (event: FederatedPointerEvent) => this.onDragStart(event, rectangle));
+
+    this.stage.addChild(rectangle);
+    this.spawnedRectangles.push(rectangle);
+    console.log('Rectangle spawned via HTML button and added to tracking array');
+  }
+
+  public handleDeleteAllClick(): void {
+    if (!this.stage) return; // Guard
+
+    // Logic copied & adapted from the old PixiJS button's pointerdown event:
+    while (this.spawnedRectangles.length > 0) {
+      const rectangle = this.spawnedRectangles.pop();
+      if (rectangle) {
+        this.stage.removeChild(rectangle);
+        rectangle.destroy({ children: true });
+      }
+    }
+    console.log('All spawned rectangles deleted via HTML button.');
   }
 }

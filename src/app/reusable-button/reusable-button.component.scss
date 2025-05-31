@@ -1,0 +1,51 @@
+.btn {
+  padding: 4px 12px; // Adjusted from PixiJS button's 25px height and 12px font
+  font-size: 12px;   // Match PixiJS button text
+  color: #000000;     // Black text like PixiJS button
+  border-radius: 5px; // Match PixiJS drawRoundedRect radius
+  border: 1px solid #333; // A subtle border can help define HTML buttons
+  cursor: pointer;
+  text-align: center;
+  display: inline-block;
+  min-width: 100px; // Match PixiJS button width
+
+  &:hover {
+    opacity: 0.85; // General hover effect, specific below
+  }
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.btn-spawn {
+  background-color: #00FF00; // Green
+  border-color: #00CC00;
+  &:hover {
+    background-color: #AAFFAA; // Lighter green (like PixiJS tint)
+  }
+}
+
+.btn-delete {
+  background-color: #FF0000; // Red
+  color: #FFFFFF; // White text for better contrast on red
+  border-color: #CC0000;
+  &:hover {
+    background-color: #FF5555; // Lighter red (like PixiJS tint)
+  }
+}
+
+.btn-nav {
+  background-color: #E0E0E0; // Light gray for navigation
+  border-color: #B0B0B0;
+  &:hover {
+    background-color: #F0F0F0;
+  }
+}
+
+.btn-default {
+  background-color: #F0F0F0; // A slightly different default gray
+  border-color: #C0C0C0;
+  &:hover {
+    background-color: #FFFFFF;
+  }
+}

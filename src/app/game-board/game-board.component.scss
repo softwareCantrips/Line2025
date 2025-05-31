@@ -12,3 +12,14 @@
   font-size: 14px;
   z-index: 100; // Ensure it's above the canvas
 }
+
+.action-buttons-container {
+  position: absolute;
+  top: 10px;
+  // left: 10px; // Back button is here, so shift these over or manage layout
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100; // Ensure above canvas
+  display: flex;
+  gap: 10px; // Space between buttons
+}
