@@ -14,6 +14,10 @@ export const routes: Routes = [
     path: 'test-page',
     loadComponent: () => import('./test-page/test-page.component').then(m => m.TestPageComponent)
   },
+  {
+    path: 'test-board',
+    loadComponent: () => import('./test-board/test-board.component').then(m => m.TestBoardComponent)
+  }
   // Optional: A wildcard route for 404s, can be added later
   // { path: '**', redirectTo: '/main-menu' }
 ];

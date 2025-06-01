@@ -19,4 +19,8 @@ export class MainMenuComponent {
   navigateToTestPage() {
     this.router.navigate(['/test-page']);
   }
+
+  navigateToTestBoard() {
+    this.router.navigate(['/test-board']);
+  }
 }
