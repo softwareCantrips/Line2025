@@ -25,6 +25,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly GRID_COLS: number = 12;
   private readonly GRID_MARGIN: number = 50; // Pixels from canvas edge for the grid container
   private readonly CELL_SPACING: number = 2; // Pixels between anchor cells
+  private readonly MAX_SPAWNED_RECTANGLES: number = 10;
 
   constructor(private router: Router) {} // Inject Router
 
@@ -70,7 +71,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           this.app.canvas.addEventListener('pointermove', this.boundOnDragMoveDOM, { passive: false });
           this.app.canvas.addEventListener('pointerup', this.boundOnDragEndDOM, { passive: false });
           this.app.canvas.addEventListener('pointerleave', this.boundOnDragEndDOM, { passive: false });
-          console.log('DOM drag listeners added for left-click drag.');
+          // console.log('DOM drag listeners added for left-click drag.');
       } else {
           console.error('Cannot add DOM drag listeners: PixiJS app or canvas not available.');
       }
@@ -80,7 +81,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
       // Rotate the object if it's a right-click, but don't drag
       object.rotation += Math.PI / 2; // 90 degrees
-      console.log('Object rotated on right-click in onDragStart.');
+      // console.log('Object rotated on right-click in onDragStart.');
       // Do not set this.draggedObject or add move/end listeners for right-click.
     }
   }
@@ -91,22 +92,22 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
    */
   private onDragMove(event: FederatedPointerEvent) {
     if (this.draggedObject) {
-            console.log('--- onDragMove ---');
-            console.log(`Window Inner W/H: ${window.innerWidth} / ${window.innerHeight}`);
-            console.log(`App Renderer W/H: ${this.app.renderer.width} / ${this.app.renderer.height}`);
-            console.log(`Stage Scale X/Y: ${this.stage.scale.x.toFixed(2)} / ${this.stage.scale.y.toFixed(2)}`);
-            console.log(`Event Global X/Y: ${event.global.x.toFixed(2)} / ${event.global.y.toFixed(2)}`);
+            // console.log('--- onDragMove ---');
+            // console.log(`Window Inner W/H: ${window.innerWidth} / ${window.innerHeight}`);
+            // console.log(`App Renderer W/H: ${this.app.renderer.width} / ${this.app.renderer.height}`);
+            // console.log(`Stage Scale X/Y: ${this.stage.scale.x.toFixed(2)} / ${this.stage.scale.y.toFixed(2)}`);
+            // console.log(`Event Global X/Y: ${event.global.x.toFixed(2)} / ${event.global.y.toFixed(2)}`);
 
             const parent = this.draggedObject.parent || this.app.stage;
             const localPosition = parent.toLocal(event.global); // Pointer in stage's local (scaled) coordinates
-            console.log(`Local Pointer X/Y (in stage coords): ${localPosition.x.toFixed(2)} / ${localPosition.y.toFixed(2)}`);
+            // console.log(`Local Pointer X/Y (in stage coords): ${localPosition.x.toFixed(2)} / ${localPosition.y.toFixed(2)}`);
 
             // this.dragOffset is based on local (unscaled) rectangle dimensions, e.g., 25/25 for a 50x50 rect
-            console.log(`Drag Offset X/Y (local to rect): ${this.dragOffset.x} / ${this.dragOffset.y}`);
+            // console.log(`Drag Offset X/Y (local to rect): ${this.dragOffset.x} / ${this.dragOffset.y}`);
 
             const newObjX = localPosition.x - this.dragOffset.x;
             const newObjY = localPosition.y - this.dragOffset.y;
-            console.log(`Calculated New Obj X/Y (local in stage): ${newObjX.toFixed(2)} / ${newObjY.toFixed(2)}`);
+            // console.log(`Calculated New Obj X/Y (local in stage): ${newObjX.toFixed(2)} / ${newObjY.toFixed(2)}`);
 
       this.draggedObject.x = localPosition.x - this.dragOffset.x;
       this.draggedObject.y = localPosition.y - this.dragOffset.y;
@@ -121,21 +122,21 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
         const globalY = event.clientY;
         const newPixiPosition = new Point(globalX, globalY); // Use imported Point
 
-        console.log('--- onDragMoveDOM ---');
-        console.log(`Window Inner W/H: ${window.innerWidth} / ${window.innerHeight}`);
-        console.log(`App Renderer W/H: ${this.app.renderer.width} / ${this.app.renderer.height}`);
-        console.log(`Stage Scale X/Y: ${this.stage.scale.x.toFixed(2)} / ${this.stage.scale.y.toFixed(2)}`);
-        console.log(`Event ClientX/Y: ${event.clientX.toFixed(2)} / ${event.clientY.toFixed(2)}`);
+        // console.log('--- onDragMoveDOM ---');
+        // console.log(`Window Inner W/H: ${window.innerWidth} / ${window.innerHeight}`);
+        // console.log(`App Renderer W/H: ${this.app.renderer.width} / ${this.app.renderer.height}`);
+        // console.log(`Stage Scale X/Y: ${this.stage.scale.x.toFixed(2)} / ${this.stage.scale.y.toFixed(2)}`);
+        // console.log(`Event ClientX/Y: ${event.clientX.toFixed(2)} / ${event.clientY.toFixed(2)}`);
 
         const parent = this.draggedObject.parent || this.app.stage;
         const localPosition = parent.toLocal(newPixiPosition);
-        console.log(`Local Pointer X/Y (in stage coords): ${localPosition.x.toFixed(2)} / ${localPosition.y.toFixed(2)}`);
+        // console.log(`Local Pointer X/Y (in stage coords): ${localPosition.x.toFixed(2)} / ${localPosition.y.toFixed(2)}`);
 
-        console.log(`Drag Offset X/Y (local to rect): ${this.dragOffset.x} / ${this.dragOffset.y}`);
+        // console.log(`Drag Offset X/Y (local to rect): ${this.dragOffset.x} / ${this.dragOffset.y}`);
 
         const newObjX = localPosition.x - this.dragOffset.x;
         const newObjY = localPosition.y - this.dragOffset.y;
-        console.log(`Calculated New Obj X/Y (local in stage): ${newObjX.toFixed(2)} / ${newObjY.toFixed(2)}`);
+        // console.log(`Calculated New Obj X/Y (local in stage): ${newObjX.toFixed(2)} / ${newObjY.toFixed(2)}`);
 
         this.draggedObject.x = newObjX;
         this.draggedObject.y = newObjY;
@@ -160,12 +161,12 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
             if (this.stage) {
                 this.stage.scale.set(scaleX, scaleY);
                 this.stage.hitArea = this.app.screen;
-                console.log(`PixiJS stage scaled by ${scaleX.toFixed(2)}x (width), ${scaleY.toFixed(2)}x (height)`);
+                // console.log(`PixiJS stage scaled by ${scaleX.toFixed(2)}x (width), ${scaleY.toFixed(2)}x (height)`);
             }
         } else if (this.stage) {
             this.stage.hitArea = this.app.screen;
         }
-        console.log(`PixiJS canvas resized to ${newWidth}x${newHeight}`);
+        // console.log(`PixiJS canvas resized to ${newWidth}x${newHeight}`);
     } else {
         console.warn('handleResize called but PixiJS app or renderer not ready.');
     }
@@ -193,7 +194,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
                          draggedBounds.y + draggedBounds.height > anchorBounds.y;
 
         if (collision) {
-          console.log('Collision detected with an anchor cell! Snapping rectangle.');
+          // console.log('Collision detected with an anchor cell! Snapping rectangle.');
           // Calculate the center of the *collided* anchor cell
           // Use anchor.x, anchor.y, anchor.width, anchor.height which are the unscaled, stage-relative values
           const anchorCenterX = anchor.x + anchor.width / 2;
@@ -218,7 +219,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           this.app.canvas.removeEventListener('pointermove', this.boundOnDragMoveDOM);
           this.app.canvas.removeEventListener('pointerup', this.boundOnDragEndDOM);
           this.app.canvas.removeEventListener('pointerleave', this.boundOnDragEndDOM);
-          console.log('DOM drag listeners removed from canvas.');
+          // console.log('DOM drag listeners removed from canvas.');
       } else {
           console.warn('Cannot remove DOM drag listeners: PixiJS app or canvas not available.');
       }
@@ -243,10 +244,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     }
     this.initialCanvasWidth = this.app.screen.width;
     this.initialCanvasHeight = this.app.screen.height;
-    console.log(`Initial canvas dimensions stored: ${this.initialCanvasWidth}x${this.initialCanvasHeight}`);
+    // console.log(`Initial canvas dimensions stored: ${this.initialCanvasWidth}x${this.initialCanvasHeight}`);
 
     // (after this.app.init and related checks)
-    console.log('Attempting to load duck texture...');
+    // console.log('Attempting to load duck texture...');
     try {
       this.duckTexture = await Assets.load('https://upload.wikimedia.org/wikipedia/commons/0/0b/Demorganducks.jpg');
       console.log('Duck texture loaded successfully.');
@@ -256,19 +257,19 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       // For now, spawning will be blocked by a check in handleSpawnRectangleClick if duckTexture is null.
     }
 
-    console.log('Attempting to access pixi-container. Element found:', document.getElementById('pixi-container'));
+    // console.log('Attempting to access pixi-container. Element found:', document.getElementById('pixi-container'));
     if (!this.app.canvas) {
       console.error('Pixi Application canvas is null or undefined before appendChild!');
       return;
     }
-    console.log('this.app.canvas before appendChild:', this.app.canvas);
+    // console.log('this.app.canvas before appendChild:', this.app.canvas);
 
     const containerElement = document.getElementById('pixi-container');
     if (containerElement && this.app && this.app.canvas) {
       containerElement.appendChild(this.app.canvas as HTMLCanvasElement);
 
       this.stage = this.app.stage;
-      console.log('Pixi Stage initialized:', this.stage);
+      // console.log('Pixi Stage initialized:', this.stage);
 
       this.stage.hitArea = this.app.screen;
       this.stage.eventMode = 'static';
@@ -294,7 +295,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
       // Update the side length for spawned rectangles (e.g., 80% of anchor cell side, ensure integer and min size)
       this.spawnedRectangleSideLength = Math.max(4, Math.floor(actualCellSideLength * 0.8));
-      console.log(`Anchor cell side length: ${actualCellSideLength}, Spawned rectangle side length: ${this.spawnedRectangleSideLength}`);
+      // console.log(`Anchor cell side length: ${actualCellSideLength}, Spawned rectangle side length: ${this.spawnedRectangleSideLength}`);
 
       if (actualCellSideLength <= 0) {
           console.warn("Calculated anchor cell dimensions are not positive. Grid may not be visible or layout is incorrect.",
@@ -335,24 +336,24 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
               });
             }
           }
-          console.log(`${this.GRID_ROWS * this.GRID_COLS} anchor grid cells created.`);
+          // console.log(`${this.GRID_ROWS * this.GRID_COLS} anchor grid cells created.`);
       }
       // --- End of New Anchor Grid Creation ---
 
       this.boundHandleResize = this.handleResize.bind(this);
       window.addEventListener('resize', this.boundHandleResize);
-      console.log('Window resize listener added.');
+      // console.log('Window resize listener added.');
 
       this.boundOnDragMoveDOM = this.onDragMoveDOM.bind(this);
       this.boundOnDragEndDOM = this.onDragEndDOM.bind(this);
-      console.log('DOM drag handlers bound.');
+      // console.log('DOM drag handlers bound.');
 
       // Prevent context menu on the canvas globally for right-clicks
       if (this.app && this.app.canvas) {
         this.app.canvas.addEventListener('contextmenu', (event) => {
             event.preventDefault();
         });
-        console.log('Global contextmenu listener added to canvas.');
+        // console.log('Global contextmenu listener added to canvas.');
       }
 
     } else {
@@ -382,6 +383,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   }
 
   public handleSpawnRectangleClick(): void {
+    if (this.spawnedRectangles.length >= this.MAX_SPAWNED_RECTANGLES) {
+      console.warn(`Maximum number of spawned rectangles (${this.MAX_SPAWNED_RECTANGLES}) reached.`);
+      return;
+    }
     if (!this.stage || !this.app) { // Initial guards for stage and app
       console.warn('Stage or App not ready, cannot spawn sprite.');
       return;
@@ -443,7 +448,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
         // This check is more for direct right-clicks when not initiating a drag.
         if (this.draggedObject !== sprite) {
           sprite.rotation += Math.PI / 2; // 90 degrees
-          console.log('Sprite rotated on right-click (direct).');
+          // console.log('Sprite rotated on right-click (direct).');
         } else {
           // If it IS the dragged object, onDragStart's right-click logic might have already run
           // or this direct listener provides an alternative way to rotate.
@@ -453,7 +458,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           // The current onDragStart logic for right-click does not start a drag, so this.draggedObject wouldn't be set by a right-click.
           // Thus, this separate rotation logic for a non-dragged item is fine.
            sprite.rotation += Math.PI / 2; // 90 degrees
-           console.log('Sprite rotated on right-click (alternative, while potentially part of drag start sequence but not dragging).');
+           // console.log('Sprite rotated on right-click (alternative, while potentially part of drag start sequence but not dragging).');
         }
       }
     });
@@ -461,7 +466,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     // Add the new sprite to the main stage and tracking array
     this.stage.addChild(sprite);
     this.spawnedRectangles.push(sprite); // spawnedRectangles is Container[], Sprite is compatible
-    console.log('Sprite spawned with duck texture and added to tracking array');
+    // console.log('Sprite spawned with duck texture and added to tracking array');
   }
 
   public handleDeleteAllClick(): void {
@@ -476,6 +481,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       }
     }
     console.log('All spawned rectangles deleted via HTML button.');
+    this.updateDiagnosticsDisplay(); // Update diagnostics after deleting all
   }
 
   public toggleDiagnostics(): void {
@@ -500,7 +506,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
         this.diagnosticsTextDisplay.anchor.set(1, 0); // Anchor top-right
         this.stage.addChild(this.diagnosticsTextDisplay);
       }
-      this.diagnosticsTextDisplay.text = `Canvas: ${this.app.screen.width} x ${this.app.screen.height}`;
+      this.diagnosticsTextDisplay.text = `Canvas: ${this.app.screen.width}x${this.app.screen.height} | Spawns: ${this.spawnedRectangles.length}/${this.MAX_SPAWNED_RECTANGLES}`;
       // Position it in the top-right corner of the original stage area,
       // adjusting the margin for the current scale.
       // The text object's anchor is (1,0) [top-right].
