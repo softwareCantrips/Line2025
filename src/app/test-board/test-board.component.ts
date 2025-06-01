@@ -50,31 +50,38 @@ export class TestBoardComponent implements AfterViewInit, OnDestroy { // Renamed
    * @param object The Container (Graphics object) to be dragged.
    */
   private onDragStart(event: FederatedPointerEvent, object: Container) {
-    // Visual feedback: make object semi-transparent and change cursor
-    object.alpha = 0.7;
-    object.cursor = 'grabbing';
-    this.draggedObject = object;
+    // Prevent default browser actions (e.g., text selection, context menu)
+    // event.preventDefault(); // This might be too aggressive here, let's do it in specific handlers
 
-    // Calculate dragOffset based on the rectangle's known local (unscaled) dimensions.
-    // This ensures the offset is correct for positioning within the stage's coordinate system,
-    // especially when the stage itself is scaled.
-    // const localRectangleWidth = 50; // Old hardcoded value
-    // const localRectangleHeight = 50; // Old hardcoded value
-    this.dragOffset.x = this.spawnedRectangleSideLength / 2;
-    this.dragOffset.y = this.spawnedRectangleSideLength / 2;
+    if (event.button === 0) { // Left-click
+      object.alpha = 0.7;
+      object.cursor = 'grabbing';
+      this.draggedObject = object;
 
-    // Immediately update the object's position to snap its (local) center to the cursor
-    // Use the new DOM-based move handler, passing the native PointerEvent
-    this.onDragMoveDOM(event.nativeEvent as PointerEvent);
+      // dragOffset is now relative to the center pivot.
+      this.dragOffset.x = 0; // Object's center (pivot) will align with cursor
+      this.dragOffset.y = 0; // Object's center (pivot) will align with cursor
 
-    // Add new DOM listeners to the canvas for the drag operation
-    if (this.app && this.app.canvas) {
-        this.app.canvas.addEventListener('pointermove', this.boundOnDragMoveDOM, { passive: false });
-        this.app.canvas.addEventListener('pointerup', this.boundOnDragEndDOM, { passive: false });
-        this.app.canvas.addEventListener('pointerleave', this.boundOnDragEndDOM, { passive: false }); // Catches mouse leaving canvas
-        console.log('DOM drag listeners added to canvas.');
-    } else {
-        console.error('Cannot add DOM drag listeners: PixiJS app or canvas not available.');
+      // Immediately update the object's position to snap its center to the cursor
+      this.onDragMoveDOM(event.nativeEvent as PointerEvent);
+
+      // Add new DOM listeners to the canvas for the drag operation
+      if (this.app && this.app.canvas) {
+          this.app.canvas.addEventListener('pointermove', this.boundOnDragMoveDOM, { passive: false });
+          this.app.canvas.addEventListener('pointerup', this.boundOnDragEndDOM, { passive: false });
+          this.app.canvas.addEventListener('pointerleave', this.boundOnDragEndDOM, { passive: false });
+          console.log('DOM drag listeners added for left-click drag.');
+      } else {
+          console.error('Cannot add DOM drag listeners: PixiJS app or canvas not available.');
+      }
+    } else if (event.button === 2) { // Right-click
+      event.preventDefault(); // Prevent context menu specifically on right-click
+      event.stopPropagation(); // Stop event from bubbling further
+
+      // Rotate the object if it's a right-click, but don't drag
+      object.rotation += Math.PI / 2; // 90 degrees
+      console.log('Object rotated on right-click in onDragStart.');
+      // Do not set this.draggedObject or add move/end listeners for right-click.
     }
   }
 
@@ -341,6 +348,14 @@ export class TestBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       this.boundOnDragEndDOM = this.onDragEndDOM.bind(this);
       console.log('DOM drag handlers bound.');
 
+      // Prevent context menu on the canvas globally for right-clicks
+      if (this.app && this.app.canvas) {
+        this.app.canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+        console.log('Global contextmenu listener added to canvas.');
+      }
+
     } else {
       if (!containerElement) {
         console.error('pixi-container element not found in the DOM!');
@@ -395,16 +410,53 @@ export class TestBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     sprite.height = this.spawnedRectangleSideLength;
 
     // Position the new sprite (e.g., center of the canvas)
-    // Anchor for sprites defaults to 0,0 (top-left), so direct x/y setting is fine.
-    sprite.x = (this.app.screen.width / 2) - (sprite.width / 2);
-    sprite.y = (this.app.screen.height / 2) - (sprite.height / 2);
+    sprite.x = (this.app.screen.width / 2); // Initial X before pivot adjustment
+    sprite.y = (this.app.screen.height / 2); // Initial Y before pivot adjustment
 
-    // Make the sprite interactive for dragging
+    // Set pivot to center for rotation
+    sprite.pivot.set(sprite.width / 2, sprite.height / 2);
+
+    // Adjust position to account for the new pivot point if needed
+    // Since x,y were set to screen center, and pivot makes it rotate around its center,
+    // the visual center should already be at app.screen.width/2, app.screen.height/2.
+    // No further adjustment to sprite.x and sprite.y for initial placement seems necessary here.
+    // If initial placement was top-left based, then an adjustment like:
+    // sprite.x += sprite.width / 2;
+    // sprite.y += sprite.height / 2;
+    // would be needed. But since we position based on center, it's implicitly handled.
+
+    // Make the sprite interactive
     sprite.eventMode = 'static';
     sprite.cursor = 'grab';
 
-    // Attach the drag start listener (onDragStart expects a Container; Sprite is a Container)
-    sprite.on('pointerdown', (event: FederatedPointerEvent) => this.onDragStart(event, sprite));
+    // Attach the pointerdown listener
+    sprite.on('pointerdown', (event: FederatedPointerEvent) => {
+      // event.stopPropagation(); // Prevent event from bubbling to stage if necessary
+
+      if (event.button === 0) { // Left-click
+        this.onDragStart(event, sprite);
+      } else if (event.button === 2) { // Right-click
+        event.preventDefault(); // Prevent context menu
+        event.stopPropagation(); // Stop event from bubbling further
+
+        // Only rotate if not currently being dragged (though onDragStart handles its own check)
+        // This check is more for direct right-clicks when not initiating a drag.
+        if (this.draggedObject !== sprite) {
+          sprite.rotation += Math.PI / 2; // 90 degrees
+          console.log('Sprite rotated on right-click (direct).');
+        } else {
+          // If it IS the dragged object, onDragStart's right-click logic might have already run
+          // or this direct listener provides an alternative way to rotate.
+          // To avoid double rotation if onDragStart also rotates on right-click:
+          // Consider if onDragStart's right-click rotation is sufficient.
+          // For now, let's keep it, ensuring it doesn't conflict.
+          // The current onDragStart logic for right-click does not start a drag, so this.draggedObject wouldn't be set by a right-click.
+          // Thus, this separate rotation logic for a non-dragged item is fine.
+           sprite.rotation += Math.PI / 2; // 90 degrees
+           console.log('Sprite rotated on right-click (alternative, while potentially part of drag start sequence but not dragging).');
+        }
+      }
+    });
 
     // Add the new sprite to the main stage and tracking array
     this.stage.addChild(sprite);
