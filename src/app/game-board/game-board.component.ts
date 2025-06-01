@@ -25,7 +25,13 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly GRID_COLS: number = 12;
   private readonly GRID_MARGIN: number = 50; // Pixels from canvas edge for the grid container
   private readonly CELL_SPACING: number = 2; // Pixels between anchor cells
-  private readonly MAX_SPAWNED_RECTANGLES: number = 10;
+  private readonly MAX_SPAWNED_RECTANGLES: number = 20;
+
+  // Image paths
+  private readonly IMAGE_PATH_STRAIGHT_BROWN = 'assets/images/straight-brown.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_GREY = 'assets/images/straight-grey.jpg';
+  private readonly IMAGE_PATH_CORNER_BROWN = 'assets/images/corner-brown.jpg';
+  private readonly IMAGE_PATH_CORNER_GREY = 'assets/images/corner-grey.jpg';
 
   constructor(private router: Router) {} // Inject Router
 
@@ -42,7 +48,21 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private anchorRectangles: AnchorRectangle[] = [];
   private showDiagnosticsText: boolean = false;
   private diagnosticsTextDisplay: Text | null = null;
-  private duckTexture: Texture | null = null;
+  // Textures for new images
+  private straightBrownTexture: Texture | null = null;
+  private straightGreyTexture: Texture | null = null;
+  private cornerBrownTexture: Texture | null = null;
+  private cornerGreyTexture: Texture | null = null;
+
+  // Spawn counts for new images
+  public straightBrownCount: number = 0;
+  public straightGreyCount: number = 0;
+  public cornerBrownCount: number = 0;
+  public cornerGreyCount: number = 0;
+
+  // Max spawn count for individual new image types
+  private readonly MAX_INDIVIDUAL_IMAGE_SPAWN: number = 5;
+
   private spawnedRectangleSideLength: number = 40; // Default size, will be updated in ngAfterViewInit
 
   /**
@@ -246,15 +266,36 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     this.initialCanvasHeight = this.app.screen.height;
     // console.log(`Initial canvas dimensions stored: ${this.initialCanvasWidth}x${this.initialCanvasHeight}`);
 
-    // (after this.app.init and related checks)
-    // console.log('Attempting to load duck texture...');
+    // Load straight brown texture
     try {
-      this.duckTexture = await Assets.load('https://upload.wikimedia.org/wikipedia/commons/0/0b/Demorganducks.jpg');
-      console.log('Duck texture loaded successfully.');
+      this.straightBrownTexture = await Assets.load(this.IMAGE_PATH_STRAIGHT_BROWN);
+      console.log('Straight brown texture loaded successfully.');
     } catch (error) {
-      console.error('Error loading duck texture:', error);
-      // Further error handling (e.g., setting a flag to disable spawning ducks) can be added here if needed.
-      // For now, spawning will be blocked by a check in handleSpawnRectangleClick if duckTexture is null.
+      console.error('Error loading straight brown texture:', error);
+    }
+
+    // Load straight grey texture
+    try {
+      this.straightGreyTexture = await Assets.load(this.IMAGE_PATH_STRAIGHT_GREY);
+      console.log('Straight grey texture loaded successfully.');
+    } catch (error) {
+      console.error('Error loading straight grey texture:', error);
+    }
+
+    // Load corner brown texture
+    try {
+      this.cornerBrownTexture = await Assets.load(this.IMAGE_PATH_CORNER_BROWN);
+      console.log('Corner brown texture loaded successfully.');
+    } catch (error) {
+      console.error('Error loading corner brown texture:', error);
+    }
+
+    // Load corner grey texture
+    try {
+      this.cornerGreyTexture = await Assets.load(this.IMAGE_PATH_CORNER_GREY);
+      console.log('Corner grey texture loaded successfully.');
+    } catch (error) {
+      console.error('Error loading corner grey texture:', error);
     }
 
     // console.log('Attempting to access pixi-container. Element found:', document.getElementById('pixi-container'));
@@ -382,92 +423,90 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     this.router.navigate(['/']); // Navigate to default route (main-menu)
   }
 
-  public handleSpawnRectangleClick(): void {
-    if (this.spawnedRectangles.length >= this.MAX_SPAWNED_RECTANGLES) {
-      console.warn(`Maximum number of spawned rectangles (${this.MAX_SPAWNED_RECTANGLES}) reached.`);
+  public handleSpawnSpecificImage(imageType: string): void {
+    let selectedTexture: Texture | null = null;
+    let currentCount: number = 0;
+    let countPropertyName: keyof GameBoardComponent | null = null;
+
+    switch (imageType) {
+      case 'straightBrown':
+        selectedTexture = this.straightBrownTexture;
+        currentCount = this.straightBrownCount;
+        countPropertyName = 'straightBrownCount';
+        break;
+      case 'straightGrey':
+        selectedTexture = this.straightGreyTexture;
+        currentCount = this.straightGreyCount;
+        countPropertyName = 'straightGreyCount';
+        break;
+      case 'cornerBrown':
+        selectedTexture = this.cornerBrownTexture;
+        currentCount = this.cornerBrownCount;
+        countPropertyName = 'cornerBrownCount';
+        break;
+      case 'cornerGrey':
+        selectedTexture = this.cornerGreyTexture;
+        currentCount = this.cornerGreyCount;
+        countPropertyName = 'cornerGreyCount';
+        break;
+      default:
+        console.warn(`Invalid imageType: ${imageType}`);
+        return;
+    }
+
+    if (currentCount >= this.MAX_INDIVIDUAL_IMAGE_SPAWN) {
+      console.warn(`Max spawns reached for ${imageType} (${this.MAX_INDIVIDUAL_IMAGE_SPAWN})`);
       return;
     }
-    if (!this.stage || !this.app) { // Initial guards for stage and app
+
+    if (this.spawnedRectangles.length >= this.MAX_SPAWNED_RECTANGLES) {
+      console.warn(`Overall maximum spawned items reached (${this.MAX_SPAWNED_RECTANGLES}).`);
+      return;
+    }
+
+    if (!selectedTexture) {
+      console.warn(`${imageType} texture not loaded yet.`);
+      return;
+    }
+
+    if (!this.stage || !this.app) {
       console.warn('Stage or App not ready, cannot spawn sprite.');
       return;
     }
-    if (!this.duckTexture) {
-      console.warn('Duck texture not loaded yet. Cannot spawn sprite.');
-      // Fallback idea (optional, not implemented in this step):
-      // const fallback = new Graphics();
-      // fallback.rect(0,0, this.spawnedRectangleSideLength, this.spawnedRectangleSideLength).fill(0xff0000); // Red square
-      // fallback.x = (this.app.screen.width / 2) - (this.spawnedRectangleSideLength / 2);
-      // fallback.y = (this.app.screen.height / 2) - (this.spawnedRectangleSideLength / 2);
-      // fallback.eventMode = 'static';
-      // fallback.cursor = 'grab';
-      // fallback.on('pointerdown', (event: FederatedPointerEvent) => this.onDragStart(event, fallback));
-      // this.stage.addChild(fallback);
-      // this.spawnedRectangles.push(fallback);
-      // console.log('Fallback Graphics object spawned.');
-      return; // Current instruction: just return if no texture
-    }
 
-    const sprite = new Sprite(this.duckTexture); // Create Sprite from loaded texture
-
-    // Set dimensions to the dynamically calculated spawnedRectangleSideLength
+    const sprite = new Sprite(selectedTexture);
     sprite.width = this.spawnedRectangleSideLength;
     sprite.height = this.spawnedRectangleSideLength;
-
-    // Set anchor to the center of the sprite
     sprite.anchor.set(0.5);
-
-    // Position the new sprite (e.g., center of the canvas)
-    // Now that anchor is set to center, sprite.x and sprite.y refer to the center of the sprite
     sprite.x = (this.app.screen.width / 2);
     sprite.y = (this.app.screen.height / 2);
-
-    // Adjust position to account for the new pivot point if needed
-    // Since x,y were set to screen center, and pivot makes it rotate around its center,
-    // the visual center should already be at app.screen.width/2, app.screen.height/2.
-    // No further adjustment to sprite.x and sprite.y for initial placement seems necessary here.
-    // If initial placement was top-left based, then an adjustment like:
-    // sprite.x += sprite.width / 2;
-    // sprite.y += sprite.height / 2;
-    // would be needed. But since we position based on center, it's implicitly handled.
-
-    // Make the sprite interactive
     sprite.eventMode = 'static';
     sprite.cursor = 'grab';
 
-    // Attach the pointerdown listener
     sprite.on('pointerdown', (event: FederatedPointerEvent) => {
-      // event.stopPropagation(); // Prevent event from bubbling to stage if necessary
-
       if (event.button === 0) { // Left-click
         this.onDragStart(event, sprite);
       } else if (event.button === 2) { // Right-click
-        event.preventDefault(); // Prevent context menu
-        event.stopPropagation(); // Stop event from bubbling further
-
-        // Only rotate if not currently being dragged (though onDragStart handles its own check)
-        // This check is more for direct right-clicks when not initiating a drag.
+        event.preventDefault();
+        event.stopPropagation();
         if (this.draggedObject !== sprite) {
-          sprite.rotation += Math.PI / 2; // 90 degrees
-          // console.log('Sprite rotated on right-click (direct).');
+          sprite.rotation += Math.PI / 2;
         } else {
-          // If it IS the dragged object, onDragStart's right-click logic might have already run
-          // or this direct listener provides an alternative way to rotate.
-          // To avoid double rotation if onDragStart also rotates on right-click:
-          // Consider if onDragStart's right-click rotation is sufficient.
-          // For now, let's keep it, ensuring it doesn't conflict.
-          // The current onDragStart logic for right-click does not start a drag, so this.draggedObject wouldn't be set by a right-click.
-          // Thus, this separate rotation logic for a non-dragged item is fine.
-           sprite.rotation += Math.PI / 2; // 90 degrees
-           // console.log('Sprite rotated on right-click (alternative, while potentially part of drag start sequence but not dragging).');
+           sprite.rotation += Math.PI / 2;
         }
       }
     });
 
-    // Add the new sprite to the main stage and tracking array
     this.stage.addChild(sprite);
-    this.spawnedRectangles.push(sprite); // spawnedRectangles is Container[], Sprite is compatible
-    // console.log('Sprite spawned with duck texture and added to tracking array');
-    this.updateDiagnosticsDisplay(); // Update diagnostics after spawning a new sprite
+    this.spawnedRectangles.push(sprite);
+
+    if (countPropertyName) {
+      // Increment the count for the specific image type
+      // This type assertion is safe due to the logic assigning countPropertyName
+      (this[countPropertyName] as number)++;
+    }
+
+    this.updateDiagnosticsDisplay();
   }
 
   public handleDeleteAllClick(): void {
@@ -507,7 +546,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
         this.diagnosticsTextDisplay.anchor.set(1, 0); // Anchor top-right
         this.stage.addChild(this.diagnosticsTextDisplay);
       }
-      this.diagnosticsTextDisplay.text = `Canvas: ${this.app.screen.width}x${this.app.screen.height} | Spawns: ${this.spawnedRectangles.length}/${this.MAX_SPAWNED_RECTANGLES}`;
+      this.diagnosticsTextDisplay.text = `Canvas: ${this.app.screen.width}x${this.app.screen.height} | Total: ${this.spawnedRectangles.length}/${this.MAX_SPAWNED_RECTANGLES} | S.Brown: ${this.straightBrownCount}/${this.MAX_INDIVIDUAL_IMAGE_SPAWN} | S.Grey: ${this.straightGreyCount}/${this.MAX_INDIVIDUAL_IMAGE_SPAWN} | C.Brown: ${this.cornerBrownCount}/${this.MAX_INDIVIDUAL_IMAGE_SPAWN} | C.Grey: ${this.cornerGreyCount}/${this.MAX_INDIVIDUAL_IMAGE_SPAWN}`;
       // Position it in the top-right corner of the original stage area,
       // adjusting the margin for the current scale.
       // The text object's anchor is (1,0) [top-right].
