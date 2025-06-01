@@ -199,10 +199,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           const anchorCenterX = anchor.x + anchor.width / 2;
           const anchorCenterY = anchor.y + anchor.height / 2;
 
-          // Snap the center of the dragged object to the center of this anchor cell
-          // this.dragOffset is pre-calculated based on the local (unscaled) dimensions of the dragged object
-          draggedItem.x = anchorCenterX - this.dragOffset.x; // Use draggedItem
-          draggedItem.y = anchorCenterY - this.dragOffset.y; // Use draggedItem
+          // Snap the center of the dragged object (its pivot point) to the center of this anchor cell
+          draggedItem.x = anchorCenterX;
+          draggedItem.y = anchorCenterY;
 
           snapped = true; // Mark that snapping has occurred
           break; // Exit loop after snapping to the first collided anchor
@@ -409,12 +408,13 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     sprite.width = this.spawnedRectangleSideLength;
     sprite.height = this.spawnedRectangleSideLength;
 
-    // Position the new sprite (e.g., center of the canvas)
-    sprite.x = (this.app.screen.width / 2); // Initial X before pivot adjustment
-    sprite.y = (this.app.screen.height / 2); // Initial Y before pivot adjustment
-
-    // Set pivot to center for rotation
+    // Set pivot to center for rotation BEFORE setting position
     sprite.pivot.set(sprite.width / 2, sprite.height / 2);
+
+    // Position the new sprite (e.g., center of the canvas)
+    // Now that pivot is set, sprite.x and sprite.y refer to the pivot point (center of the sprite)
+    sprite.x = (this.app.screen.width / 2);
+    sprite.y = (this.app.screen.height / 2);
 
     // Adjust position to account for the new pivot point if needed
     // Since x,y were set to screen center, and pivot makes it rotate around its center,
