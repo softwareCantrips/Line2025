@@ -408,11 +408,11 @@ export class TestBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     sprite.width = this.spawnedRectangleSideLength;
     sprite.height = this.spawnedRectangleSideLength;
 
-    // Set pivot to center for rotation BEFORE setting position
-    sprite.pivot.set(sprite.width / 2, sprite.height / 2);
+    // Set anchor to the center of the sprite
+    sprite.anchor.set(0.5);
 
     // Position the new sprite (e.g., center of the canvas)
-    // Now that pivot is set, sprite.x and sprite.y refer to the pivot point (center of the sprite)
+    // Now that anchor is set to center, sprite.x and sprite.y refer to the center of the sprite
     sprite.x = (this.app.screen.width / 2);
     sprite.y = (this.app.screen.height / 2);
 
