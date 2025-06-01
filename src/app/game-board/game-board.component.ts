@@ -455,10 +455,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       const margin = 10; // Desired screen-space margin in pixels
 
       if (this.initialCanvasWidth > 0 && this.stage.scale.x !== 0) {
-          this.diagnosticsTextDisplay.x = this.initialCanvasWidth - (margin / this.stage.scale.x);
+          this.diagnosticsTextDisplay.x = this.initialCanvasWidth - ((margin + 20) / this.stage.scale.x);
       } else {
           // Fallback if initialCanvasWidth isn't set or scale is zero (to avoid errors)
-          this.diagnosticsTextDisplay.x = this.app.screen.width - margin;
+          this.diagnosticsTextDisplay.x = this.app.screen.width - (margin + 20);
       }
 
       if (this.stage.scale.y !== 0) {
