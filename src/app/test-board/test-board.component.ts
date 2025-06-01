@@ -467,6 +467,7 @@ export class TestBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     this.stage.addChild(sprite);
     this.spawnedRectangles.push(sprite); // spawnedRectangles is Container[], Sprite is compatible
     // console.log('Sprite spawned with duck texture and added to tracking array');
+    this.updateDiagnosticsDisplay(); // Update diagnostics after spawning a new sprite
   }
 
   public handleDeleteAllClick(): void {
