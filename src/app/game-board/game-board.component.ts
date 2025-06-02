@@ -28,10 +28,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly MAX_SPAWNED_RECTANGLES: number = 20;
 
   // Image paths
-  private readonly IMAGE_PATH_STRAIGHT_BROWN = 'assets/images/straight-brown.jpg';
-  private readonly IMAGE_PATH_STRAIGHT_GREY = 'assets/images/straight-grey.jpg';
-  private readonly IMAGE_PATH_CORNER_BROWN = 'assets/images/corner-brown.jpg';
-  private readonly IMAGE_PATH_CORNER_GREY = 'assets/images/corner-grey.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_BROWN = '/assets/images/straight-brown.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_GREY = '/assets/images/straight-grey.jpg';
+  private readonly IMAGE_PATH_CORNER_BROWN = '/assets/images/corner-brown.jpg';
+  private readonly IMAGE_PATH_CORNER_GREY = '/assets/images/corner-grey.jpg';
 
   constructor(private router: Router) {} // Inject Router
 
