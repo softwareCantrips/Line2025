@@ -28,10 +28,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly MAX_SPAWNED_RECTANGLES: number = 20;
 
   // Image paths
-  private readonly IMAGE_PATH_STRAIGHT_BROWN = 'assets/images/straight-brown.jpg';
-  private readonly IMAGE_PATH_STRAIGHT_GREEN = 'assets/images/straight-green.jpg';
-  private readonly IMAGE_PATH_CORNER_BROWN = 'assets/images/turn-brown.jpg';
-  private readonly IMAGE_PATH_CORNER_GREY = 'assets/images/turn-green.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_BROWN = './assets/images/straight-brown.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_GREEN = './assets/images/straight-green.jpg';
+  private readonly IMAGE_PATH_CORNER_BROWN = './assets/images/turn-brown.jpg';
+  private readonly IMAGE_PATH_TURN_GREEN = './assets/images/turn-green.jpg';
 
   constructor(private router: Router) {} // Inject Router
 
@@ -292,7 +292,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
     // Load corner grey texture
     try {
-      this.turnGreenTexture = await Assets.load(this.IMAGE_PATH_CORNER_GREY);
+      this.turnGreenTexture = await Assets.load(this.IMAGE_PATH_TURN_GREEN);
       console.log('Corner grey texture loaded successfully.');
     } catch (error) {
       console.error('Error loading corner grey texture:', error);
