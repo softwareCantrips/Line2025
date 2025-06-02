@@ -29,9 +29,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
   // Image paths
   private readonly IMAGE_PATH_STRAIGHT_BROWN = '/assets/images/straight-brown.jpg';
-  private readonly IMAGE_PATH_STRAIGHT_GREY = '/assets/images/straight-grey.jpg';
-  private readonly IMAGE_PATH_CORNER_BROWN = '/assets/images/corner-brown.jpg';
-  private readonly IMAGE_PATH_CORNER_GREY = '/assets/images/corner-grey.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_GREEN = '/assets/images/straight-green.jpg';
+  private readonly IMAGE_PATH_CORNER_BROWN = '/assets/images/turn-brown.jpg';
+  private readonly IMAGE_PATH_CORNER_GREY = '/assets/images/turn-green.jpg';
 
   constructor(private router: Router) {} // Inject Router
 
@@ -50,9 +50,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private diagnosticsTextDisplay: Text | null = null;
   // Textures for new images
   private straightBrownTexture: Texture | null = null;
-  private straightGreyTexture: Texture | null = null;
-  private cornerBrownTexture: Texture | null = null;
-  private cornerGreyTexture: Texture | null = null;
+  private straightGreenTexture: Texture | null = null;
+  private turnBrownTexture: Texture | null = null;
+  private turnGreenTexture: Texture | null = null;
 
   // Spawn counts for new images
   public straightBrownCount: number = 0;
@@ -276,7 +276,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
     // Load straight grey texture
     try {
-      this.straightGreyTexture = await Assets.load(this.IMAGE_PATH_STRAIGHT_GREY);
+      this.straightGreenTexture = await Assets.load(this.IMAGE_PATH_STRAIGHT_GREEN);
       console.log('Straight grey texture loaded successfully.');
     } catch (error) {
       console.error('Error loading straight grey texture:', error);
@@ -284,7 +284,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
     // Load corner brown texture
     try {
-      this.cornerBrownTexture = await Assets.load(this.IMAGE_PATH_CORNER_BROWN);
+      this.turnBrownTexture = await Assets.load(this.IMAGE_PATH_CORNER_BROWN);
       console.log('Corner brown texture loaded successfully.');
     } catch (error) {
       console.error('Error loading corner brown texture:', error);
@@ -292,7 +292,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
     // Load corner grey texture
     try {
-      this.cornerGreyTexture = await Assets.load(this.IMAGE_PATH_CORNER_GREY);
+      this.turnGreenTexture = await Assets.load(this.IMAGE_PATH_CORNER_GREY);
       console.log('Corner grey texture loaded successfully.');
     } catch (error) {
       console.error('Error loading corner grey texture:', error);
@@ -429,23 +429,23 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     let countPropertyName: keyof GameBoardComponent | null = null;
 
     switch (imageType) {
-      case 'straightBrown':
+      case 'straigtBrown':
         selectedTexture = this.straightBrownTexture;
         currentCount = this.straightBrownCount;
         countPropertyName = 'straightBrownCount';
         break;
-      case 'straightGrey':
-        selectedTexture = this.straightGreyTexture;
+      case 'straightGreen':
+        selectedTexture = this.straightGreenTexture;
         currentCount = this.straightGreyCount;
         countPropertyName = 'straightGreyCount';
         break;
-      case 'cornerBrown':
-        selectedTexture = this.cornerBrownTexture;
+      case 'turnBrown':
+        selectedTexture = this.turnBrownTexture;
         currentCount = this.cornerBrownCount;
         countPropertyName = 'cornerBrownCount';
         break;
-      case 'cornerGrey':
-        selectedTexture = this.cornerGreyTexture;
+      case 'turnGreen':
+        selectedTexture = this.turnGreenTexture;
         currentCount = this.cornerGreyCount;
         countPropertyName = 'cornerGreyCount';
         break;
