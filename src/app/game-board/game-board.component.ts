@@ -431,7 +431,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     let countPropertyName: keyof GameBoardComponent | null = null;
 
     switch (imageType) {
-      case 'straigtBrown':
+      case 'straightBrown':
         selectedTexture = this.straightBrownTexture;
         currentCount = this.straightBrownCount;
         countPropertyName = 'straightBrownCount';
