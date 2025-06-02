@@ -28,10 +28,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly MAX_SPAWNED_RECTANGLES: number = 20;
 
   // Image paths
-  private readonly IMAGE_PATH_STRAIGHT_BROWN = './assets/images/straight-brown.jpg';
-  private readonly IMAGE_PATH_STRAIGHT_GREEN = './assets/images/straight-green.jpg';
-  private readonly IMAGE_PATH_CORNER_BROWN = './assets/images/turn-brown.jpg';
-  private readonly IMAGE_PATH_TURN_GREEN = './assets/images/turn-green.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_BROWN = 'assets/images/straight-brown.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_GREEN = 'assets/images/straight-green.jpg';
+  private readonly IMAGE_PATH_CORNER_BROWN = 'assets/images/turn-brown.jpg';
+  private readonly IMAGE_PATH_TURN_GREEN = 'assets/images/turn-green.jpg';
 
   constructor(private router: Router) {} // Inject Router
 
@@ -265,6 +265,8 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     this.initialCanvasWidth = this.app.screen.width;
     this.initialCanvasHeight = this.app.screen.height;
     // console.log(`Initial canvas dimensions stored: ${this.initialCanvasWidth}x${this.initialCanvasHeight}`);
+
+    await Assets.init({ basePath: '' });
 
     // Load straight brown texture
     try {
