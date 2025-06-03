@@ -27,11 +27,11 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly CELL_SPACING: number = 2; // Pixels between anchor cells
   private readonly MAX_SPAWNED_RECTANGLES: number = 20;
 
-  // Image paths
-  private readonly IMAGE_PATH_STRAIGHT_BROWN = '/assets/images/straight-brown.jpg';
-  private readonly IMAGE_PATH_STRAIGHT_GREEN = '/assets/images/straight-green.jpg';
-  private readonly IMAGE_PATH_CORNER_BROWN = '/assets/images/turn-brown.jpg';
-  private readonly IMAGE_PATH_CORNER_GREY = '/assets/images/turn-green.jpg';
+  // Image paths       
+  private readonly IMAGE_PATH_STRAIGHT_BROWN = 'assets/images/straight-brown.jpg';
+  private readonly IMAGE_PATH_STRAIGHT_GREEN = 'assets/images/straight-green.jpg';
+  private readonly IMAGE_PATH_CORNER_BROWN = 'assets/images/turn-brown.jpg';
+  private readonly IMAGE_PATH_CORNER_GREY = 'assets/images/turn-green.jpg';
 
   constructor(private router: Router) {} // Inject Router
 
@@ -429,7 +429,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     let countPropertyName: keyof GameBoardComponent | null = null;
 
     switch (imageType) {
-      case 'straigtBrown':
+      case 'straightBrown':
         selectedTexture = this.straightBrownTexture;
         currentCount = this.straightBrownCount;
         countPropertyName = 'straightBrownCount';
