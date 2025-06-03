@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { Router } from '@angular/router'; // Import Router
+import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { Application, Container, Graphics, Text, FederatedPointerEvent, Point, Assets, Sprite, Texture } from 'pixi.js';
 import { ReusableButtonComponent } from '../reusable-button/reusable-button.component';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
@@ -16,7 +17,7 @@ export interface AnchorRectangle {
 @Component({
   selector: 'app-game-board', // Changed selector
   standalone: true,
-  imports: [ReusableButtonComponent], // Removed RouterLink, kept ReusableButtonComponent
+  imports: [ReusableButtonComponent, FormsModule], // Added FormsModule
   templateUrl: './game-board.component.html', // Changed templateUrl
   styleUrls: ['./game-board.component.scss'] // Changed styleUrls
 })
@@ -64,6 +65,11 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   private readonly MAX_INDIVIDUAL_IMAGE_SPAWN: number = 5;
 
   private spawnedRectangleSideLength: number = 40; // Default size, will be updated in ngAfterViewInit
+
+  // Properties for UI controls for spawning at coordinates
+  public selectedImageForSpawn: string = 'straightBrown';
+  public spawnGridX: number | null = null;
+  public spawnGridY: number | null = null;
 
   /**
    * Handles the start of a drag operation on a Container (specifically, a Graphics object).
@@ -423,7 +429,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     this.router.navigate(['/']); // Navigate to default route (main-menu)
   }
 
-  public handleSpawnSpecificImage(imageType: string): void {
+  public handleSpawnSpecificImage(imageType: string, x?: number, y?: number): void {
     let selectedTexture: Texture | null = null;
     let currentCount: number = 0;
     let countPropertyName: keyof GameBoardComponent | null = null;
@@ -478,8 +484,15 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     sprite.width = this.spawnedRectangleSideLength;
     sprite.height = this.spawnedRectangleSideLength;
     sprite.anchor.set(0.5);
-    sprite.x = (this.app.screen.width / 2);
-    sprite.y = (this.app.screen.height / 2);
+
+    if (x !== undefined && y !== undefined) {
+      sprite.x = x;
+      sprite.y = y;
+    } else {
+      sprite.x = (this.app.screen.width / 2);
+      sprite.y = (this.app.screen.height / 2);
+    }
+
     sprite.eventMode = 'static';
     sprite.cursor = 'grab';
 
@@ -507,6 +520,38 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     }
 
     this.updateDiagnosticsDisplay();
+  }
+
+  public spawnTileAtCoordinates(imageType: string, gridX: number, gridY: number): void {
+    if (gridX < 0 || gridX >= this.GRID_COLS || gridY < 0 || gridY >= this.GRID_ROWS) {
+      console.warn(`Invalid grid coordinates: (${gridX}, ${gridY}). Must be within (0-${this.GRID_COLS - 1}, 0-${this.GRID_ROWS - 1}).`);
+      return;
+    }
+
+    const anchorIndex = gridY * this.GRID_COLS + gridX;
+    const anchor = this.anchorRectangles[anchorIndex];
+
+    if (!anchor) {
+      console.error(`Anchor not found at grid coordinates: (${gridX}, ${gridY}), calculated index: ${anchorIndex}.`);
+      return;
+    }
+
+    const targetX = anchor.x + anchor.width / 2;
+    const targetY = anchor.y + anchor.height / 2;
+
+    this.handleSpawnSpecificImage(imageType, targetX, targetY);
+  }
+
+  public handleSpawnAtCoordinatesClick(): void {
+    if (!this.selectedImageForSpawn || this.spawnGridX === null || this.spawnGridY === null || isNaN(Number(this.spawnGridX)) || isNaN(Number(this.spawnGridY))) {
+      console.warn('Invalid input for spawning at coordinates. Please select an image type and enter valid X and Y grid coordinates.');
+      return;
+    }
+
+    const gridX = Number(this.spawnGridX);
+    const gridY = Number(this.spawnGridY);
+
+    this.spawnTileAtCoordinates(this.selectedImageForSpawn, gridX, gridY);
   }
 
   public handleDeleteAllClick(): void {
