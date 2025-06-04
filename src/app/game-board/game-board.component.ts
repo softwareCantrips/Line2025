@@ -16,6 +16,12 @@ export interface AnchorRectangle {
   gridCol: number; // Add this
 }
 
+export interface PlacedTileData {
+  tileName: string;
+  gridX: number; // Representing column
+  gridY: number; // Representing row
+}
+
 @Component({
   selector: 'app-game-board', // Changed selector
   standalone: true,
@@ -233,9 +239,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           draggedItem.y = anchorCenterY;
 
           // Logging the tile placement
-          if (draggedItem && (draggedItem as any).imageTypeUsed && anchor.gridRow !== undefined && anchor.gridCol !== undefined) {
-            const tileName = (draggedItem as any).imageTypeUsed;
-            console.log(`Tile placed: ${tileName}, X: ${anchor.gridCol}, Y: ${anchor.gridRow}`);
+          const placedData = this.getPlacedTileData(draggedItem, anchor);
+          if (placedData) {
+            console.log(`Tile Event Data: { tileName: '${placedData.tileName}', gridX: ${placedData.gridX}, gridY: ${placedData.gridY} }`);
           }
 
           snapped = true; // Mark that snapping has occurred
@@ -258,6 +264,23 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           console.warn('Cannot remove DOM drag listeners: PixiJS app or canvas not available.');
       }
     }
+  }
+
+  private getPlacedTileData(tileSprite: any, anchor: AnchorRectangle): PlacedTileData | null {
+    if (!tileSprite || !tileSprite.imageTypeUsed || anchor.gridCol === undefined || anchor.gridRow === undefined) {
+      console.error('Could not retrieve placed tile data: missing required properties on tile or anchor.');
+      return null;
+    }
+
+    const tileName = tileSprite.imageTypeUsed as string;
+    const gridX = anchor.gridCol;
+    const gridY = anchor.gridRow;
+
+    return {
+      tileName: tileName,
+      gridX: gridX,
+      gridY: gridY
+    };
   }
 
   // addButtonHoverEffect method removed as it's no longer used
