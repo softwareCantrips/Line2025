@@ -235,8 +235,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           // Logging the tile placement
           if (draggedItem && (draggedItem as any).imageTypeUsed && anchor.gridRow !== undefined && anchor.gridCol !== undefined) {
             const tileName = (draggedItem as any).imageTypeUsed;
-            const gridCoords = { row: anchor.gridRow, col: anchor.gridCol };
-            console.log(`Tile placed: ${tileName} at coordinates (row: ${gridCoords.row}, col: ${gridCoords.col})`);
+            console.log(`Tile placed: ${tileName}, X: ${anchor.gridCol}, Y: ${anchor.gridRow}`);
           }
 
           snapped = true; // Mark that snapping has occurred
