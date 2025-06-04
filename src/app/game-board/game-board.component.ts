@@ -18,8 +18,8 @@ export interface AnchorRectangle {
 
 export interface PlacedTileData {
   tileName: string;
-  gridX: number; // Representing column
-  gridY: number; // Representing row
+  gridX: number; // Column index
+  gridY: number; // Row index
 }
 
 @Component({
@@ -241,7 +241,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           // Logging the tile placement
           const placedData = this.getPlacedTileData(draggedItem, anchor);
           if (placedData) {
-            console.log(`Tile Event Data: { tileName: '${placedData.tileName}', gridX: ${placedData.gridX}, gridY: ${placedData.gridY} }`);
+            console.log(`Tile Placed - Name: ${placedData.tileName}, X: ${placedData.gridX}, Y: ${placedData.gridY}`);
           }
 
           snapped = true; // Mark that snapping has occurred
@@ -268,18 +268,13 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
   private getPlacedTileData(tileSprite: any, anchor: AnchorRectangle): PlacedTileData | null {
     if (!tileSprite || !tileSprite.imageTypeUsed || anchor.gridCol === undefined || anchor.gridRow === undefined) {
-      console.error('Could not retrieve placed tile data: missing required properties on tile or anchor.');
+      console.error('getPlacedTileData: Missing required properties on tile or anchor.');
       return null;
     }
-
-    const tileName = tileSprite.imageTypeUsed as string;
-    const gridX = anchor.gridCol;
-    const gridY = anchor.gridRow;
-
     return {
-      tileName: tileName,
-      gridX: gridX,
-      gridY: gridY
+      tileName: tileSprite.imageTypeUsed as string,
+      gridX: anchor.gridCol,
+      gridY: anchor.gridRow
     };
   }
 
