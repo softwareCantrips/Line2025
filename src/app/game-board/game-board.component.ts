@@ -12,6 +12,8 @@ export interface AnchorRectangle {
   width: number;
   height: number;
   graphics: Graphics;
+  gridRow: number; // Add this
+  gridCol: number; // Add this
 }
 
 @Component({
@@ -230,6 +232,13 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           draggedItem.x = anchorCenterX;
           draggedItem.y = anchorCenterY;
 
+          // Logging the tile placement
+          if (draggedItem && (draggedItem as any).imageTypeUsed && anchor.gridRow !== undefined && anchor.gridCol !== undefined) {
+            const tileName = (draggedItem as any).imageTypeUsed;
+            const gridCoords = { row: anchor.gridRow, col: anchor.gridCol };
+            console.log(`Tile placed: ${tileName} at coordinates (row: ${gridCoords.row}, col: ${gridCoords.col})`);
+          }
+
           snapped = true; // Mark that snapping has occurred
           break; // Exit loop after snapping to the first collided anchor
         }
@@ -379,7 +388,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
                 y: anchorY,
                 width: actualCellSideLength, // Use actualCellSideLength
                 height: actualCellSideLength, // Use actualCellSideLength
-                graphics: anchorGraphics
+                graphics: anchorGraphics,
+                gridRow: row, // Add this
+                gridCol: col   // Add this
               });
             }
           }
@@ -484,6 +495,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     sprite.width = this.spawnedRectangleSideLength;
     sprite.height = this.spawnedRectangleSideLength;
     sprite.anchor.set(0.5);
+    sprite.imageTypeUsed = imageType; // Store image type on sprite
 
     if (x !== undefined && y !== undefined) {
       sprite.x = x;
