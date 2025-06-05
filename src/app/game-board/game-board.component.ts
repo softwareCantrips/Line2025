@@ -220,9 +220,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
                          draggedBounds.y + draggedBounds.height > anchorBounds.y;
 
         if (collision) {
-          // console.log('Collision detected with an anchor cell! Snapping rectangle.');
-          // Calculate the center of the *collided* anchor cell
-          // Use anchor.x, anchor.y, anchor.width, anchor.height which are the unscaled, stage-relative values
+          
+          console.log('Dragging ended on an anchor')
+
           const anchorCenterX = anchor.x + anchor.width / 2;
           const anchorCenterY = anchor.y + anchor.height / 2;
 
