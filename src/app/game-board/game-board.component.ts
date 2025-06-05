@@ -208,6 +208,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
   }
 
   private onDragEnd() {
+    console.log("DEBUG: onDragEnd() method called");
     if (this.draggedObject) {
       // --- Start of New Grid Snapping Logic ---
       let snapped = false; // Flag to ensure we only snap to one anchor
@@ -228,6 +229,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
                          draggedBounds.y + draggedBounds.height > anchorBounds.y;
 
         if (collision) {
+          console.log("DEBUG: Collision detected with an anchor");
           // console.log('Collision detected with an anchor cell! Snapping rectangle.');
           // Calculate the center of the *collided* anchor cell
           // Use anchor.x, anchor.y, anchor.width, anchor.height which are the unscaled, stage-relative values
@@ -237,12 +239,13 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
           // Snap the center of the dragged object (its pivot point) to the center of this anchor cell
           draggedItem.x = anchorCenterX;
           draggedItem.y = anchorCenterY;
+          console.log("A Tile has been placed on an anchor");
 
-          // Logging the tile placement
-          const placedData = this.getPlacedTileData(draggedItem, anchor);
-          if (placedData) {
-            console.log(`Tile Placed - Name: ${placedData.tileName}, X: ${placedData.gridX}, Y: ${placedData.gridY}`);
-          }
+          // Logging the tile placement (Temporarily removed for this debugging step)
+          // const placedData = this.getPlacedTileData(draggedItem, anchor);
+          // if (placedData) {
+          //   console.log(`Tile Placed - Name: ${placedData.tileName}, X: ${placedData.gridX}, Y: ${placedData.gridY}`);
+          // }
 
           snapped = true; // Mark that snapping has occurred
           break; // Exit loop after snapping to the first collided anchor
