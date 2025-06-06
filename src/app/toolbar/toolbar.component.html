@@ -13,8 +13,9 @@
     <legend>Spawn Tile at Coordinates</legend>
     <label for="imageTypeSelectCoords">Tile Type:</label>
     <select id="imageTypeSelectCoords" [(ngModel)]="selectedImageForSpawn">
-      <!-- Assuming assetKeys in ToolbarComponent holds the values like 'straightBrown', 'straightGreen' etc. -->
-      <option *ngFor="let key of assetKeys" [value]="key">{{ key | titlecase }}</option>
+      <option *ngFor="let key of objectKeys(assetKeys)" [value]="assetKeys[key]">
+        {{ assetKeys[key] | titlecase }} <!-- Displaying the value, e.g., "Straight Brown" -->
+      </option>
     </select>
     <label for="spawnX">X:</label>
     <input id="spawnX" type="number" placeholder="Grid X" [(ngModel)]="spawnGridX" />

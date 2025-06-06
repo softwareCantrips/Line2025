@@ -17,15 +17,14 @@ export class ToolbarComponent {
   @Output() toggleDiagnosticsRequest = new EventEmitter<void>();
   @Output() navigateToMainMenuRequest = new EventEmitter<void>();
 
-  // Using ASSET_KEYS for consistency in select dropdown and default
   public selectedImageForSpawn: string = ASSET_KEYS.STRAIGHT_BROWN;
   public spawnGridX: number | null = null;
   public spawnGridY: number | null = null;
 
-  // Expose ASSET_KEYS to the template for the select options
-  public assetKeys = Object.values(ASSET_KEYS);
-  // We need a way to map ASSET_KEYS values to user-friendly names if needed,
-  // but for now, the raw keys will work.
+  // Expose ASSET_KEYS object directly for template access
+  public assetKeys = ASSET_KEYS;
+  // Helper to iterate over object keys in the template for the select dropdown
+  objectKeys = Object.keys;
 
   constructor() {}
 

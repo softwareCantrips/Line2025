@@ -96,7 +96,7 @@ export class DiagnosticsComponent implements OnInit, OnChanges, OnDestroy {
       if (this.pixiAppService.stage) {
         this.pixiAppService.stage.removeChild(this.diagnosticsTextDisplay);
       }
-      this.diagnosticsTextDisplay.destroy({ children: true, texture: true, basePath: true });
+      this.diagnosticsTextDisplay.destroy(); // Simplified destroy call
       this.diagnosticsTextDisplay = null;
       console.log('DiagnosticsComponent: Text display destroyed.');
     }

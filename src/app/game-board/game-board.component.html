@@ -11,8 +11,8 @@
     [canvasWidth]="pixiAppService.app?.screen?.width ?? 0"
     [canvasHeight]="pixiAppService.app?.screen?.height ?? 0"
     [initialCanvasWidth]="pixiAppService.getInitialWidth()"
-    [stageScaleX]="pixiAppService.stage?.scale.x ?? 1"
-    [stageScaleY]="pixiAppService.stage?.scale.y ?? 1"
+    [stageScaleX]="pixiAppService.stage?.scale?.x ?? 1"
+    [stageScaleY]="pixiAppService.stage?.scale?.y ?? 1"
     [totalSpawned]="tileService.getTotalSpawnedCount()"
     [maxSpawned]="tileService.getMaxOverallSpawnCount()"
     [tileCounts]="getTileCountsForDiagnostics()">

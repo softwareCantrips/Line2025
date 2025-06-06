@@ -101,7 +101,7 @@ export class PixiAppService implements OnDestroy {
     }
     if (this.appInstance) {
       // Destroy the PixiJS application, removing canvas and freeing resources
-      this.appInstance.destroy(true, { children: true, texture: true, basePath: true });
+      this.appInstance.destroy(true, { children: true, texture: true }); // basePath removed
       console.log('PixiJS Application destroyed by PixiAppService.');
     }
   }
