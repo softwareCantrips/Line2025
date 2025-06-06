@@ -20,7 +20,9 @@
   // uiBgHeight (calculated in .ts) = 330px. This is the total height of the PixiJS uiContainer's background.
   // The HTML controls should be placed below this.
   // So, top = uiContainer.y + uiBgHeight + desired_spacing_below_panel
-  top: calc(10px + 330px + 10px); // results in 350px
+  // Removing top positioning, will use bottom instead.
+  // top: calc(10px + 330px + 10px); // results in 350px
+  bottom: 10px; // New positioning
   width: 180px; // Match PixiJS buttonWidth (buttons are 180px, uiContainer background is 190px due to 5px padding)
   padding: 5px; // Tighter padding
   background-color: #E0E0E0; // Match PixiJS uiContainer background color
