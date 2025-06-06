@@ -1,0 +1,53 @@
+/* Styles for the toolbar component */
+.toolbar-panel {
+  display: flex;
+  flex-wrap: wrap; /* Allow items to wrap to next line */
+  gap: 10px; /* Space between elements/groups */
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+}
+
+.toolbar-panel fieldset {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 0; /* Reset default margin */
+  border-radius: 4px;
+  display: flex;
+  gap: 8px; /* Space between items within a fieldset */
+  align-items: center; /* Align items nicely in a row */
+}
+
+.toolbar-panel legend {
+  font-weight: bold;
+  padding: 0 5px;
+  font-size: 0.9em;
+}
+
+.toolbar-panel button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #e9e9e9;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.toolbar-panel button:hover {
+  background-color: #ddd;
+}
+
+.toolbar-panel label {
+  margin-right: 5px;
+}
+
+.toolbar-panel input[type="number"],
+.toolbar-panel select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 5px; /* Space after input/select */
+}
+
+.toolbar-panel input[type="number"] {
+  width: 70px; /* Specific width for coordinate inputs */
+}

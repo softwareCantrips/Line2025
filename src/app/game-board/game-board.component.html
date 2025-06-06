@@ -1,24 +1,20 @@
-<div class="page-button-panel">
-  <app-reusable-button label="Back to Main Menu" buttonType="nav" (onClick)="navigateToMainMenu()"></app-reusable-button>
-  <app-reusable-button label="Spawn Straight Brown" buttonType="spawn" (onClick)="handleSpawnSpecificImage('straightBrown')"></app-reusable-button>
-  <app-reusable-button label="Spawn Straight Green" buttonType="spawn" (onClick)="handleSpawnSpecificImage('straightGreen')"></app-reusable-button>
-  <app-reusable-button label="Spawn Turn Brown" buttonType="spawn" (onClick)="handleSpawnSpecificImage('turnBrown')"></app-reusable-button>
-  <app-reusable-button label="Spawn Turn Green" buttonType="spawn" (onClick)="handleSpawnSpecificImage('turnGreen')"></app-reusable-button>
-
-  <div class="spawn-at-coords-controls" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc;">
-    <label for="imageTypeSelectCoords">Spawn Tile at Coordinates:</label>
-    <select id="imageTypeSelectCoords" [(ngModel)]="selectedImageForSpawn">
-      <option value="straightBrown">Straight Brown</option>
-      <option value="straightGreen">Straight Green</option>
-      <option value="turnBrown">Turn Brown</option>
-      <option value="turnGreen">Turn Green</option>
-    </select>
-    <input type="number" placeholder="Grid X" [(ngModel)]="spawnGridX" style="margin-left: 5px; width: 70px;" />
-    <input type="number" placeholder="Grid Y" [(ngModel)]="spawnGridY" style="margin-left: 5px; width: 70px;" />
-    <app-reusable-button label="Spawn at Coords" buttonType="spawn" (onClick)="handleSpawnAtCoordinatesClick()" style="margin-left: 5px;"></app-reusable-button>
-  </div>
-
-  <app-reusable-button label="Delete All" buttonType="delete" (onClick)="handleDeleteAllClick()" style="margin-top: 10px;"></app-reusable-button>
-  <app-reusable-button label="Diagnostics" buttonType="default" (onClick)="toggleDiagnostics()"></app-reusable-button>
+<app-toolbar
+  (spawnTileRequest)="onSpawnTileRequested($event)"
+  (spawnAtCoordinatesRequest)="onSpawnAtCoordinatesRequested($event)"
+  (deleteAllRequest)="onDeleteAllRequested()"
+  (toggleDiagnosticsRequest)="onToggleDiagnosticsRequested()"
+  (navigateToMainMenuRequest)="onNavigateToMainMenuRequested()">
+</app-toolbar>
+<div id="pixi-container" #pixiContainer>
+  <app-diagnostics
+    [showDiagnostics]="showDiagnosticsState"
+    [canvasWidth]="pixiAppService.app?.screen.width ?? 0"
+    [canvasHeight]="pixiAppService.app?.screen.height ?? 0"
+    [initialCanvasWidth]="pixiAppService.getInitialWidth()"
+    [stageScaleX]="pixiAppService.stage?.scale.x ?? 1"
+    [stageScaleY]="pixiAppService.stage?.scale.y ?? 1"
+    [totalSpawned]="tileService.getTotalSpawnedCount()"
+    [maxSpawned]="tileService.getMaxOverallSpawnCount()"
+    [tileCounts]="getTileCountsForDiagnostics()">
+  </app-diagnostics>
 </div>
-<div id="pixi-container"></div>

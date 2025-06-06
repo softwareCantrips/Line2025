@@ -1,0 +1,31 @@
+<div class="toolbar-panel">
+  <button (click)="onNavigateToMainMenuClick()">Back to Main Menu</button>
+
+  <fieldset>
+    <legend>Spawn Tiles</legend>
+    <button (click)="onSpawnTileClick(assetKeys.STRAIGHT_BROWN)">Spawn Straight Brown</button>
+    <button (click)="onSpawnTileClick(assetKeys.STRAIGHT_GREEN)">Spawn Straight Green</button>
+    <button (click)="onSpawnTileClick(assetKeys.TURN_BROWN)">Spawn Turn Brown</button>
+    <button (click)="onSpawnTileClick(assetKeys.TURN_GREEN)">Spawn Turn Green</button>
+  </fieldset>
+
+  <fieldset class="spawn-at-coords-controls">
+    <legend>Spawn Tile at Coordinates</legend>
+    <label for="imageTypeSelectCoords">Tile Type:</label>
+    <select id="imageTypeSelectCoords" [(ngModel)]="selectedImageForSpawn">
+      <!-- Assuming assetKeys in ToolbarComponent holds the values like 'straightBrown', 'straightGreen' etc. -->
+      <option *ngFor="let key of assetKeys" [value]="key">{{ key | titlecase }}</option>
+    </select>
+    <label for="spawnX">X:</label>
+    <input id="spawnX" type="number" placeholder="Grid X" [(ngModel)]="spawnGridX" />
+    <label for="spawnY">Y:</label>
+    <input id="spawnY" type="number" placeholder="Grid Y" [(ngModel)]="spawnGridY" />
+    <button (click)="onSpawnAtCoordinatesClick()">Spawn at Coords</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Actions</legend>
+    <button (click)="onDeleteAllClick()">Delete All Tiles</button>
+    <button (click)="onToggleDiagnosticsClick()">Toggle Diagnostics</button>
+  </fieldset>
+</div>
