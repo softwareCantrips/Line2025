@@ -204,7 +204,8 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       // --- Start of New Grid Snapping Logic ---
       let snapped = false; // Flag to ensure we only snap to one anchor
       // Iterate over all anchor rectangles in the grid
-      for (const anchor of this.anchorRectangles) {
+      for (let i = 0; i < this.anchorRectangles.length; i++) {
+        const anchor = this.anchorRectangles[i];
         // Ensure draggedObject is treated as Graphics for getBounds, if not already guaranteed by type
         const draggedItem = this.draggedObject; // this.draggedObject is Container, which is fine
         const anchorGfx = anchor.graphics;
@@ -220,8 +221,10 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
                          draggedBounds.y + draggedBounds.height > anchorBounds.y;
 
         if (collision) {
-          
-          console.log('Dragging ended on an anchor')
+          const index = i; // Index of the collided anchor
+          const rowIndex = Math.floor(index / this.GRID_COLS);
+          const colIndex = index % this.GRID_COLS;
+          console.log(`Dragging ended on an anchor at grid coordinates: ${colIndex}/${rowIndex}`);
 
           const anchorCenterX = anchor.x + anchor.width / 2;
           const anchorCenterY = anchor.y + anchor.height / 2;
