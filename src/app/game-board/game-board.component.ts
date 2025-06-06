@@ -38,6 +38,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
   private app!: Application;
   private stage!: Container;
+  private uiContainer!: Container; // Added uiContainer
   private boundHandleResize!: () => void; // For window resize event listener
   private initialCanvasWidth!: number; // Store initial canvas width
   private initialCanvasHeight!: number; // Store initial canvas height
@@ -318,6 +319,91 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       this.stage = this.app.stage;
       // console.log('Pixi Stage initialized:', this.stage);
 
+      // Initialize and add uiContainer
+      this.uiContainer = new Container();
+      this.stage.addChild(this.uiContainer);
+
+      // Position uiContainer (example: top-left with margin)
+      // The exact positioning relative to the anchor grid might need adjustment
+      // depending on how the anchor grid's position is determined.
+      // For now, positioning it with a simple margin from the canvas edge.
+      const uiMargin = 10; // Margin for the UI container
+      this.uiContainer.x = uiMargin;
+      this.uiContainer.y = uiMargin;
+      // console.log('uiContainer initialized, added to stage, and positioned.');
+
+      const buttonWidth = 180; // Standard width for UI buttons
+      const buttonHeight = 30;  // Standard height for most UI buttons
+      const backButtonHeight = 40; // Slightly taller for the main back button
+      const buttonSpacing = 10; // Vertical spacing between buttons
+      const uiBgPadding = 5; // Padding for the uiContainer background
+
+      // Calculate dimensions for uiContainer background
+      // Total content height: backButtonHeight + 7 other buttons (30px each) + 7 spacings (10px each)
+      // Content height = 40 (back) + 10 (space) + 6 * (30+10) (buttons in loop) + 30 (spawnAtCoords) + 10 (final space from currentY update)
+      // Let's recalculate based on final currentY logic:
+      // Initial currentY starts considering padding.
+      // Final currentY before it's incremented for the *next* potential button:
+      // Back button (40) + space (10) = 50
+      // 6 loop buttons: 6 * (30+10) = 240. Total = 50 + 240 = 290
+      // SpawnAtCoords button (30) + space (10) = 40. Total = 290 + 40 = 330.
+      // This 330 is the Y value *after* the last button's spacing.
+      // So, the height of content up to the bottom of the last button is 330 - buttonSpacing (10) = 320.
+      const uiBgContentHeight = (backButtonHeight + buttonSpacing) +
+                                (buttonsToCreate.length * (buttonHeight + buttonSpacing)) +
+                                (buttonHeight + buttonSpacing) - buttonSpacing; // Subtract last spacing as it's below content
+
+      const uiBgWidth = buttonWidth + (2 * uiBgPadding);
+      const uiBgHeight = uiBgContentHeight + (2 * uiBgPadding);
+
+      const uiBg = new Graphics();
+      uiBg.rect(0, 0, uiBgWidth, uiBgHeight);
+      uiBg.fill(0xE0E0E0); // Light grey
+      uiBg.roundRect(0, 0, uiBgWidth, uiBgHeight, 8); // Rounded corners for the background
+      uiBg.fill(0xE0E0E0);
+      this.uiContainer.addChildAt(uiBg, 0); // Add as first child
+
+      // Adjust button positions to account for uiBgPadding
+      // All buttons are children of uiContainer, their x,y are relative to uiContainer's top-left.
+      // The background is also a child, at 0,0 of uiContainer.
+      // Buttons should be placed *inside* this background.
+      const buttonStartX = uiBgPadding;
+
+      // Create and add the "Back to Main Menu" button (specific dimensions)
+      const backButton = this.createPixiButton("Back to Main Menu", buttonWidth, backButtonHeight, () => this.navigateToMainMenu());
+      backButton.x = buttonStartX;
+      backButton.y = uiBgPadding; // Start after top padding
+      this.uiContainer.addChild(backButton);
+      // console.log('Back to Main Menu button created and added to uiContainer.');
+
+      let currentY = backButton.y + backButtonHeight + buttonSpacing;
+
+      const buttonsToCreate = [
+        { label: "Spawn Straight Brown", callback: () => this.handleSpawnSpecificImage('straightBrown') },
+        { label: "Spawn Straight Green", callback: () => this.handleSpawnSpecificImage('straightGreen') },
+        { label: "Spawn Turn Brown", callback: () => this.handleSpawnSpecificImage('turnBrown') },
+        { label: "Spawn Turn Green", callback: () => this.handleSpawnSpecificImage('turnGreen') },
+        { label: "Delete All", callback: () => this.handleDeleteAllClick() },
+        { label: "Diagnostics", callback: () => this.toggleDiagnostics() }
+      ];
+
+      for (const btnData of buttonsToCreate) {
+        const button = this.createPixiButton(btnData.label, buttonWidth, buttonHeight, btnData.callback);
+        button.x = buttonStartX; // Position with padding
+        button.y = currentY;
+        this.uiContainer.addChild(button);
+        currentY += buttonHeight + buttonSpacing;
+      }
+      // console.log(`${buttonsToCreate.length} additional UI buttons created and added.`);
+
+      // Add "Spawn at Coords" button
+      const spawnAtCoordsButton = this.createPixiButton("Spawn at Coords", buttonWidth, buttonHeight, () => this.handleSpawnAtCoordinatesClick());
+      spawnAtCoordsButton.x = buttonStartX; // Position with padding
+      spawnAtCoordsButton.y = currentY;
+      this.uiContainer.addChild(spawnAtCoordsButton);
+      currentY += buttonHeight + buttonSpacing; // Update currentY for consistency
+      // console.log('Spawn at Coords button created and added.');
+
       this.stage.hitArea = this.app.screen;
       this.stage.eventMode = 'static';
 
@@ -423,6 +509,55 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     //     this.app.destroy(true, { children: true, texture: true, basePath: true });
     //     console.log('PixiJS Application destroyed.');
     // }
+  }
+
+  private createPixiButton(labelText: string, width: number, height: number, onClickCallback: () => void): Container {
+    const buttonContainer = new Container();
+    const cornerRadius = 10; // Keep corner radius, or make it a parameter too if needed
+
+    // Button background
+    const graphics = new Graphics();
+    // Use specific fill color 0x3366FF
+    graphics.rect(0, 0, width, height); // Use passed width and height
+    graphics.fill(0x3366FF);
+    graphics.roundRect(0, 0, width, height, cornerRadius);
+    graphics.fill(0x3366FF); // Ensure fill is applied after roundRect
+
+    // Add a subtle hover effect (optional) - This part is commented out, can be implemented later
+    // graphics.beginFill(0x0056b3); // Darker blue for hover
+    // graphics.drawRoundedRect(0, 0, width, height, cornerRadius); // Use passed width/height
+    // graphics.endFill();
+    // Note: Proper hover effects require on('pointerover') and on('pointerout')
+
+    buttonContainer.addChild(graphics);
+
+    // Button text
+    const text = new Text({
+        text: labelText,
+        style: {
+            fill: 0xFFFFFF, // White text (0xFFFFFF as per requirement)
+            fontSize: 14,   // Font size 14px as per requirement
+            fontFamily: 'Arial', // Keep Arial or choose another common font
+            align: 'center'
+        }
+    });
+    text.anchor.set(0.5); // Anchor to its center for easy positioning
+    text.x = width / 2;   // Center text using passed width
+    text.y = height / 2;  // Center text using passed height
+    buttonContainer.addChild(text);
+
+    // Interactivity
+    // Apply to graphics, as it's the visual part. Or apply to buttonContainer if it should capture events for the whole area.
+    graphics.eventMode = 'static';
+    graphics.cursor = 'pointer';
+    graphics.on('pointerdown', onClickCallback);
+    // If applying to container instead:
+    // buttonContainer.eventMode = 'static';
+    // buttonContainer.cursor = 'pointer';
+    // buttonContainer.on('pointerdown', onClickCallback);
+
+
+    return buttonContainer;
   }
 
   navigateToMainMenu() {

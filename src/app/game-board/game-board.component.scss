@@ -11,3 +11,58 @@
 // .top-bar-back-button class is available if needed for specific styling,
 // but may not need styles if ReusableButtonComponent's default is fine.
 // This comment can also be removed if not relevant anymore.
+
+.spawn-at-coords-controls {
+  position: absolute;
+  left: 10px; // Align with PixiJS uiContainer.x
+  // Calculation for top:
+  // uiContainer.y (uiMargin in .ts) = 10px
+  // uiBgHeight (calculated in .ts) = 330px. This is the total height of the PixiJS uiContainer's background.
+  // The HTML controls should be placed below this.
+  // So, top = uiContainer.y + uiBgHeight + desired_spacing_below_panel
+  top: calc(10px + 330px + 10px); // results in 350px
+  width: 180px; // Match PixiJS buttonWidth (buttons are 180px, uiContainer background is 190px due to 5px padding)
+  padding: 5px; // Tighter padding
+  background-color: #E0E0E0; // Match PixiJS uiContainer background color
+  border: 1px solid #adadad; // Keep border
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  z-index: 10; // Ensure it's above the Pixi canvas
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #2c3e50; // Darker text for better readability
+  }
+
+  select, input[type="number"] {
+    display: block;
+    width: 100%; // Inputs take full width of their parent container
+    padding: 8px; // Increased padding for better touch interaction
+    margin-bottom: 10px; // Increased margin
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+
+  // Remove the last margin for the last child to prevent extra space
+  select:last-child, input[type="number"]:last-child {
+    margin-bottom: 0;
+  }
+
+  // If X and Y inputs need to be side-by-side:
+  // .coords-inputs {
+  //   display: flex;
+  //   justify-content: space-between;
+  //   input[type="number"] {
+  //     width: calc(50% - 5px); // 5px for margin between them
+  //     margin-bottom: 10px;
+  //     &:first-child {
+  //        // margin-right: 10px; // This would be handled by justify-content space-between on parent
+  //     }
+  //   }
+  // }
+}
