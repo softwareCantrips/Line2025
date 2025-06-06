@@ -338,6 +338,16 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       const buttonSpacing = 10; // Vertical spacing between buttons
       const uiBgPadding = 5; // Padding for the uiContainer background
 
+      // Moved buttonsToCreate declaration here, before uiBgContentHeight calculation
+      const buttonsToCreate = [
+        { label: "Spawn Straight Brown", callback: () => this.handleSpawnSpecificImage('straightBrown') },
+        { label: "Spawn Straight Green", callback: () => this.handleSpawnSpecificImage('straightGreen') },
+        { label: "Spawn Turn Brown", callback: () => this.handleSpawnSpecificImage('turnBrown') },
+        { label: "Spawn Turn Green", callback: () => this.handleSpawnSpecificImage('turnGreen') },
+        { label: "Delete All", callback: () => this.handleDeleteAllClick() },
+        { label: "Diagnostics", callback: () => this.toggleDiagnostics() }
+      ];
+
       // Calculate dimensions for uiContainer background
       // Total content height: backButtonHeight + 7 other buttons (30px each) + 7 spacings (10px each)
       // Content height = 40 (back) + 10 (space) + 6 * (30+10) (buttons in loop) + 30 (spawnAtCoords) + 10 (final space from currentY update)
@@ -349,9 +359,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
       // SpawnAtCoords button (30) + space (10) = 40. Total = 290 + 40 = 330.
       // This 330 is the Y value *after* the last button's spacing.
       // So, the height of content up to the bottom of the last button is 330 - buttonSpacing (10) = 320.
-      const uiBgContentHeight = (backButtonHeight + buttonSpacing) +
-                                (buttonsToCreate.length * (buttonHeight + buttonSpacing)) +
-                                (buttonHeight + buttonSpacing) - buttonSpacing; // Subtract last spacing as it's below content
+      const uiBgContentHeight = (backButtonHeight + buttonSpacing) +  // For the 'Back to Main Menu' button and its spacing
+                                (buttonsToCreate.length * (buttonHeight + buttonSpacing)) + // For all buttons in the array
+                                (buttonHeight + buttonSpacing) - buttonSpacing; // For the 'Spawn at Coords' button and its spacing (minus final spacing)
 
       const uiBgWidth = buttonWidth + (2 * uiBgPadding);
       const uiBgHeight = uiBgContentHeight + (2 * uiBgPadding);
@@ -378,14 +388,7 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
 
       let currentY = backButton.y + backButtonHeight + buttonSpacing;
 
-      const buttonsToCreate = [
-        { label: "Spawn Straight Brown", callback: () => this.handleSpawnSpecificImage('straightBrown') },
-        { label: "Spawn Straight Green", callback: () => this.handleSpawnSpecificImage('straightGreen') },
-        { label: "Spawn Turn Brown", callback: () => this.handleSpawnSpecificImage('turnBrown') },
-        { label: "Spawn Turn Green", callback: () => this.handleSpawnSpecificImage('turnGreen') },
-        { label: "Delete All", callback: () => this.handleDeleteAllClick() },
-        { label: "Diagnostics", callback: () => this.toggleDiagnostics() }
-      ];
+      // buttonsToCreate array is now declared above uiBgContentHeight
 
       for (const btnData of buttonsToCreate) {
         const button = this.createPixiButton(btnData.label, buttonWidth, buttonHeight, btnData.callback);
