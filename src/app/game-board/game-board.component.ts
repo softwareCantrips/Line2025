@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { Router } from '@angular/router'; // Import Router
 import { FormsModule } from '@angular/forms'; // Import FormsModule
-import { Application, Container, Graphics, Text, FederatedPointerEvent, Point, Assets, Sprite, Texture } from 'pixi.js';
+import { Application, Container, Graphics, Text, FederatedPointerEvent, Point, Assets, Sprite, Texture, Rectangle } from 'pixi.js';
 import { ReusableButtonComponent } from '../reusable-button/reusable-button.component';
 // Ticker from '@pixi/ticker' has been removed as Application handles its own ticker.
 // DisplayObject import removed as Graphics objects (which are Containers) are used.
@@ -550,15 +550,16 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy { // Renamed
     buttonContainer.addChild(text);
 
     // Interactivity
-    // Apply to graphics, as it's the visual part. Or apply to buttonContainer if it should capture events for the whole area.
-    graphics.eventMode = 'static';
-    graphics.cursor = 'pointer';
-    graphics.on('pointerdown', onClickCallback);
-    // If applying to container instead:
-    // buttonContainer.eventMode = 'static';
-    // buttonContainer.cursor = 'pointer';
-    // buttonContainer.on('pointerdown', onClickCallback);
+    // Removed interactivity from graphics:
+    // graphics.eventMode = 'static';
+    // graphics.cursor = 'pointer';
+    // graphics.on('pointerdown', onClickCallback);
 
+    // Apply interactivity to the buttonContainer instead:
+    buttonContainer.eventMode = 'static';
+    buttonContainer.cursor = 'pointer';
+    buttonContainer.hitArea = new Rectangle(0, 0, width, height); // Use imported Rectangle
+    buttonContainer.on('pointerdown', onClickCallback);
 
     return buttonContainer;
   }
