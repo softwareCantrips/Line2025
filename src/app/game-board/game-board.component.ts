@@ -56,9 +56,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private pixiAppService: PixiAppService,
+    public pixiAppService: PixiAppService,  // Changed to public
     private assetService: AssetService,
-    private tileService: TileService,
+    public tileService: TileService,        // Changed to public
     private gridService: GridService
   ) {}
 
