@@ -43,8 +43,9 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('pixiContainer', { static: true }) pixiContainer!: ElementRef<HTMLDivElement>;
 
-  private boundOnDragMoveDOM!: (event: PointerEvent) => void;
-  private boundOnDragEndDOM!: (event: PointerEvent) => void;
+  // DOM-specific bound event handlers are removed
+  // private boundOnDragMoveDOM!: (event: PointerEvent) => void;
+  // private boundOnDragEndDOM!: (event: PointerEvent) => void;
   private draggedObject: Container | null = null;
   private dragOffset = { x: 0, y: 0 }; // Offset from pointer to object's origin during drag
   // private spawnedRectangles: Container[] = []; // Replaced by TileService logic + pixiObjectsOnBoard
@@ -89,13 +90,13 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
       this.dragOffset.x = 0;
       this.dragOffset.y = 0;
 
-      // Add new DOM listeners to the canvas for the drag operation
-      if (this.pixiAppService.app && this.pixiAppService.app.canvas) {
-          this.pixiAppService.app.canvas.addEventListener('pointermove', this.boundOnDragMoveDOM, { passive: false });
-          this.pixiAppService.app.canvas.addEventListener('pointerup', this.boundOnDragEndDOM, { passive: false });
-          this.pixiAppService.app.canvas.addEventListener('pointerleave', this.boundOnDragEndDOM, { passive: false });
+      // Add PixiJS stage event listeners for the drag operation
+      if (this.pixiAppService.stage) {
+        this.pixiAppService.stage.on('pointermove', this._onDragMove, this);
+        this.pixiAppService.stage.on('pointerup', this._onDragEnd, this);
+        this.pixiAppService.stage.on('pointerupoutside', this._onDragEnd, this);
       } else {
-          console.error('Cannot add DOM drag listeners: PixiJS app or canvas not available.');
+        console.error('PixiJS stage not available to attach drag events.');
       }
     } else if (event.button === 2) { // Right-click
       event.preventDefault();
@@ -106,27 +107,25 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // private _onDragMove(event: FederatedPointerEvent) { ... } // If needed
+  // private _onDragMove(event: FederatedPointerEvent) { ... } // If needed -> This is the new _onDragMove
 
-  private _onDragMoveDOM(event: PointerEvent): void {
-    event.preventDefault();
+  // Renamed from _onDragMoveDOM, signature changed to FederatedPointerEvent
+  private _onDragMove(event: FederatedPointerEvent): void {
+    // No event.preventDefault(); needed for PixiJS events typically
     if (this.draggedObject) {
-        const globalX = event.clientX;
-        const globalY = event.clientY;
-        const newPixiPosition = new Point(globalX, globalY);
         const parent = this.draggedObject.parent || this.pixiAppService.stage;
-        const localPosition = parent.toLocal(newPixiPosition);
-        this.draggedObject.x = localPosition.x - this.dragOffset.x;
-        this.draggedObject.y = localPosition.y - this.dragOffset.y;
+        if (parent) { // Ensure parent is available
+            const newPosition = parent.toLocal(event.global); // event.global is from FederatedPointerEvent
+            // this.dragOffset is {x: 0, y: 0}
+            this.draggedObject.x = newPosition.x - this.dragOffset.x;
+            this.draggedObject.y = newPosition.y - this.dragOffset.y;
+        }
     }
   }
 
-  private _onDragEndDOM(event: PointerEvent): void {
-    event.preventDefault();
-    this._onDragEnd();
-  }
-
-  private _onDragEnd() {
+  // Renamed from _onDragEndDOM, event is optional and of type FederatedPointerEvent
+  private _onDragEnd(event?: FederatedPointerEvent): void {
+    // No event.preventDefault();
     if (this.draggedObject) {
       let snapped = false;
       const draggedItem = this.draggedObject!;
@@ -162,10 +161,11 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
       this.draggedObject.cursor = 'grab';
       this.draggedObject = null;
 
-      if (this.pixiAppService.app && this.pixiAppService.app.canvas) {
-          this.pixiAppService.app.canvas.removeEventListener('pointermove', this.boundOnDragMoveDOM);
-          this.pixiAppService.app.canvas.removeEventListener('pointerup', this.boundOnDragEndDOM);
-          this.pixiAppService.app.canvas.removeEventListener('pointerleave', this.boundOnDragEndDOM);
+      // Remove PixiJS stage event listeners
+      if (this.pixiAppService.stage) {
+        this.pixiAppService.stage.off('pointermove', this._onDragMove, this);
+        this.pixiAppService.stage.off('pointerup', this._onDragEnd, this);
+        this.pixiAppService.stage.off('pointerupoutside', this._onDragEnd, this);
       }
     }
   }
@@ -197,18 +197,27 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
         console.error("PixiAppService stage not available for drawing anchor grid.");
     }
 
-    this.boundOnDragMoveDOM = this._onDragMoveDOM.bind(this);
-    this.boundOnDragEndDOM = this._onDragEndDOM.bind(this);
+    // Binding of DOM event handlers is removed
+    // this.boundOnDragMoveDOM = this._onDragMoveDOM.bind(this);
+    // this.boundOnDragEndDOM = this._onDragEndDOM.bind(this);
     // No call to updateDiagnosticsDisplay() here, DiagnosticsComponent handles its own updates.
   }
 
   ngOnDestroy(): void {
-    // PixiAppService's ngOnDestroy handles app destruction and resize listener.
-    // If there were other component-specific listeners, they'd be removed here.
-    if (this.pixiAppService.app && this.pixiAppService.app.canvas) {
-        this.pixiAppService.app.canvas.removeEventListener('pointermove', this.boundOnDragMoveDOM);
-        this.pixiAppService.app.canvas.removeEventListener('pointerup', this.boundOnDragEndDOM);
-        this.pixiAppService.app.canvas.removeEventListener('pointerleave', this.boundOnDragEndDOM);
+    // Remove DOM listeners if they were somehow left (though they shouldn't be if _onDragEnd always fires)
+    // This specific block for DOM listeners is no longer needed as we switched to PixiJS events for active drag.
+    // if (this.pixiAppService.app && this.pixiAppService.app.canvas) {
+    //     this.pixiAppService.app.canvas.removeEventListener('pointermove', this.boundOnDragMoveDOM);
+    //     this.pixiAppService.app.canvas.removeEventListener('pointerup', this.boundOnDragEndDOM);
+    //     this.pixiAppService.app.canvas.removeEventListener('pointerleave', this.boundOnDragEndDOM);
+    // }
+
+    // Cleanup for PixiJS stage listeners if a drag operation was interrupted
+    if (this.draggedObject && this.pixiAppService.stage) {
+        this.pixiAppService.stage.off('pointermove', this._onDragMove, this);
+        this.pixiAppService.stage.off('pointerup', this._onDragEnd, this);
+        this.pixiAppService.stage.off('pointerupoutside', this._onDragEnd, this);
+        console.log('Cleaned up orphaned PixiJS drag listeners in ngOnDestroy.');
     }
   }
 
