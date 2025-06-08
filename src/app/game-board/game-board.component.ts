@@ -68,10 +68,28 @@ export class GameBoardComponent implements AfterViewInit, OnDestroy {
       object.alpha = 0.7;
       object.cursor = 'grabbing';
       this.draggedObject = object;
+
+      // Get the pointer position in the parent's local coordinates.
+      // The parent is typically the stage.
+      const parent = object.parent || this.pixiAppService.stage;
+      if (parent) { // Ensure parent is available
+        const initialClickPositionInParent = parent.toLocal(event.global);
+
+        // Since the object's anchor is (0.5, 0.5), its x/y coordinates represent its center.
+        // Set the object's center directly to this click position.
+        object.x = initialClickPositionInParent.x;
+        object.y = initialClickPositionInParent.y;
+      } else {
+        console.error("Dragged object has no parent, cannot determine initial position.");
+        // Fallback or error handling if needed, though objects on stage should always have a parent.
+      }
+
+      // dragOffset remains (0,0) because we want the object's center
+      // (which is its x,y due to anchor 0.5) to follow the cursor during subsequent moves.
       this.dragOffset.x = 0;
       this.dragOffset.y = 0;
-      this._onDragMoveDOM(event.nativeEvent as PointerEvent);
 
+      // Add new DOM listeners to the canvas for the drag operation
       if (this.pixiAppService.app && this.pixiAppService.app.canvas) {
           this.pixiAppService.app.canvas.addEventListener('pointermove', this.boundOnDragMoveDOM, { passive: false });
           this.pixiAppService.app.canvas.addEventListener('pointerup', this.boundOnDragEndDOM, { passive: false });
