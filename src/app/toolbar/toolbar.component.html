@@ -3,18 +3,18 @@
 
   <fieldset>
     <legend>Spawn Tiles</legend>
-    <button (click)="onSpawnTileClick(assetKeys.STRAIGHT_BROWN)">Spawn Straight Brown</button>
-    <button (click)="onSpawnTileClick(assetKeys.STRAIGHT_GREEN)">Spawn Straight Green</button>
-    <button (click)="onSpawnTileClick(assetKeys.TURN_BROWN)">Spawn Turn Brown</button>
-    <button (click)="onSpawnTileClick(assetKeys.TURN_GREEN)">Spawn Turn Green</button>
+    <button (click)="onSpawnTileClick(assetKeysMap.STRAIGHT_BROWN)">Spawn Straight Brown</button>
+    <button (click)="onSpawnTileClick(assetKeysMap.STRAIGHT_GREEN)">Spawn Straight Green</button>
+    <button (click)="onSpawnTileClick(assetKeysMap.TURN_BROWN)">Spawn Turn Brown</button>
+    <button (click)="onSpawnTileClick(assetKeysMap.TURN_GREEN)">Spawn Turn Green</button>
   </fieldset>
 
   <fieldset class="spawn-at-coords-controls">
     <legend>Spawn Tile at Coordinates</legend>
     <label for="imageTypeSelectCoords">Tile Type:</label>
     <select id="imageTypeSelectCoords" [(ngModel)]="selectedImageForSpawn">
-      <option *ngFor="let key of objectKeys(assetKeys)" [value]="assetKeys[key]">
-        {{ assetKeys[key] | titlecase }} <!-- Displaying the value, e.g., "Straight Brown" -->
+      <option *ngFor="let option of assetKeySelectOptions" [value]="option.value">
+        {{ option.displayName }}
       </option>
     </select>
     <label for="spawnX">X:</label>

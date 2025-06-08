@@ -21,12 +21,26 @@ export class ToolbarComponent {
   public spawnGridX: number | null = null;
   public spawnGridY: number | null = null;
 
-  // Expose ASSET_KEYS object directly for template access
-  public assetKeys = ASSET_KEYS;
-  // Helper to iterate over object keys in the template for the select dropdown
-  objectKeys = Object.keys;
+  public assetKeysMap = ASSET_KEYS; // For direct access in click handlers
+  public assetKeySelectOptions: { keyName: keyof typeof ASSET_KEYS; value: string; displayName: string }[];
 
-  constructor() {}
+  constructor() {
+    this.assetKeySelectOptions = (Object.keys(ASSET_KEYS) as Array<keyof typeof ASSET_KEYS>).map(key => {
+      return {
+        keyName: key, // e.g., "STRAIGHT_BROWN"
+        value: ASSET_KEYS[key], // e.g., "straightBrown"
+        displayName: this.formatDisplayName(ASSET_KEYS[key]) // e.g., "Straight Brown"
+      };
+    });
+  }
+
+  private formatDisplayName(value: string): string {
+    if (!value) return '';
+    // Add space before capital letters (e.g., "straightBrown" -> "straight Brown")
+    const withSpaces = value.replace(/([A-Z])/g, ' $1');
+    // Capitalize the first letter of the resulting string
+    return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).toLowerCase();
+  }
 
   onSpawnTileClick(imageType: string): void {
     this.spawnTileRequest.emit(imageType);
