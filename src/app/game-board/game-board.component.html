@@ -6,7 +6,7 @@
   (navigateToMainMenuRequest)="onNavigateToMainMenuRequested()">
 </app-toolbar>
 <div id="pixi-container" #pixiContainer>
-  <app-diagnostics
+  <app-diagnostics *ngIf="pixiAppService.isInitialized | async"
     [showDiagnostics]="showDiagnosticsState"
     [canvasWidth]="pixiAppService.app?.screen?.width ?? 0"
     [canvasHeight]="pixiAppService.app?.screen?.height ?? 0"

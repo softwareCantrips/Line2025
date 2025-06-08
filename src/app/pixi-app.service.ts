@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy, NgZone } from '@angular/core';
 import { Application, Container } from 'pixi.js';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ export class PixiAppService implements OnDestroy {
   private boundHandleResize!: () => void;
   private initialCanvasWidth: number = 0;
   private initialCanvasHeight: number = 0;
+  public isInitialized = new BehaviorSubject<boolean>(false);
 
   constructor(private ngZone: NgZone) {}
 
@@ -46,6 +48,7 @@ export class PixiAppService implements OnDestroy {
     window.addEventListener('resize', this.boundHandleResize);
 
     console.log('PixiAppService initialized and canvas appended.');
+    this.isInitialized.next(true);
   }
 
   private handleResize(): void {
@@ -95,6 +98,10 @@ export class PixiAppService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.isInitialized) {
+      this.isInitialized.next(false);
+      this.isInitialized.complete();
+    }
     if (this.boundHandleResize) {
       window.removeEventListener('resize', this.boundHandleResize);
       console.log('Window resize listener removed by PixiAppService.');
